@@ -1,3 +1,6 @@
+`ifndef OOPA_CPU_INCLUDE_BUS_V_
+`define OOPA_CPU_INCLUDE_BUS_V_
+
 // address bus
 `define ADDR_BUS_WIDTH          32
 `define ADDR_BUS                (`ADDR_BUS_WIDTH) - 1:0
@@ -33,3 +36,5 @@
 `define FUNCT_BUS               (`FUNCT_BUS_WIDTH) - 1:0
 `define SHAMT_BUS_WIDTH         5
 `define SHAMT_BUS               (`SHAMT_BUS_WIDTH) - 1:0
+
+`endif  // OOPA_CPU_INCLUDE_BUS_V_
