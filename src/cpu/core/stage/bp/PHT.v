@@ -17,7 +17,7 @@ module PHT(
 );
 
   reg [1:0] counters[`PHT_SIZE - 1:0];
-  assign is_taken_out = counters[index] & 2'b10;
+  assign is_taken_out = |(counters[index] & 2'b10);
 
   always @(posedge clk) begin
     if (!rst) begin

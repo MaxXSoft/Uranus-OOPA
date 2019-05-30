@@ -31,13 +31,13 @@ module BPIF(
     current_pht_index_in, current_pht_index_out
   );
 
-  PipelineDeliver #(`ADDR_BUS) ff_next_pc(
+  PipelineDeliver #(`ADDR_BUS_WIDTH) ff_next_pc(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     next_pc_in, next_pc_out
   );
 
-  PipelineDeliver #(`ADDR_BUS) ff_current_pc(
+  PipelineDeliver #(`ADDR_BUS_WIDTH) ff_current_pc(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     current_pc_in, current_pc_out

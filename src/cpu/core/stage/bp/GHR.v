@@ -13,6 +13,7 @@ module GHR(
 );
 
   reg [`GHR_BUS] ghr;
+  assign ghr_out = ghr;
 
   always @(posedge clk) begin
     if (!rst) begin

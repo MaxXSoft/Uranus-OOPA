@@ -4,8 +4,8 @@
 `include "branch.v"
 
 module BTB(
-  input clk,
-  input rst,
+  input               clk,
+  input               rst,
   // from ID
   input               is_branch_in,
   input               is_jump_in,
