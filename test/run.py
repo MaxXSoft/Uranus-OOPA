@@ -2,7 +2,9 @@ import re
 import os
 
 re_modname = re.compile(r'module ([A-Za-z0-9_]+)\(')
-verilator = 'verilator -Wall --exe verilator/sim.cpp --Mdir build -Iinclude'
+verilator = 'verilator -Wall --cc --exe verilator/sim.cpp'
+verilator += ' --Mdir build -Iinclude'
+verilator += ' -Wno-UNUSED -Wno-COMBDLY'
 make_cmd = 'make -C build'
 
 def detect_dir():
@@ -24,7 +26,7 @@ def get_mod_name(file):
     return ans[0]
 
 def compile(file, mod_name):
-  cmd = f' {verilator} --cc {file} -CFLAGS "-DMODULE_NAME=V{mod_name}"'
+  cmd = f'{verilator} {file} -CFLAGS "-DMODULE_NAME=V{mod_name}"'
   if os.system(cmd):
     exit(1)
 
