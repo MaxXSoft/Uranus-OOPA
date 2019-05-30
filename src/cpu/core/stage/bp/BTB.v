@@ -29,7 +29,7 @@ module BTB(
   genvar i;
   generate
     for (i = 0; i < `BTB_SIZE; i = i + 1) begin
-      BranchTargetLine line(
+      BTBLine line(
         .clk          (clk),
         .rst          (rst),
         .write_en     (line_write_en[i]),

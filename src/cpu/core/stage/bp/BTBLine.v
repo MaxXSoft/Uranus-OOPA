@@ -3,7 +3,7 @@
 `include "bus.v"
 `include "branch.v"
 
-module BranchTargetLine(
+module BTBLine(
   input                 clk,
   input                 rst,
   input                 write_en,
@@ -43,4 +43,4 @@ module BranchTargetLine(
     end
   end
 
-endmodule // BranchTargetLine
+endmodule // BTBLine
