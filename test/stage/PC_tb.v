@@ -2,10 +2,13 @@
 
 `include "tb.v"
 
-module PC_tb();
+module PC_tb(
+  input clk,
+  input rst
+);
 
-  // clock & reset generator
-  `GEN_CLK_RST_TICK(clk, rst);
+  // generate tick counter
+  `GEN_TICK(clk, rst);
 
   // modules
   reg [31:0] next_pc;
@@ -29,14 +32,16 @@ module PC_tb();
   );
 
   // testbench
-  initial begin
-    #00 next_pc = 32'hbfc00120;
-    `DISPLAY("next_pc", next_pc);
-    #10 next_pc = 32'hbfc00124;
-    `DISPLAY("next_pc", next_pc);
-    #10 next_pc = 32'hbfc00128;
-    `DISPLAY("next_pc", next_pc);
-    #20 $stop;
+  always @(posedge clk) begin
+    if (!rst) begin
+      next_pc <= 32'hbfc00120;
+    end
+    else begin
+      next_pc <= next_pc + 4;
+    end
+
+    `DISPLAY("mod_pc_out", mod_pc_out);
+    if (tick >= 10) $finish;
   end
 
 endmodule // PC_tb
