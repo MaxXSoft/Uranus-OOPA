@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 
 module OOPA(
-  input         aclk,
-  input         aresetn,
+  input           aclk,
+  input           aresetn,
 
-  input         int_0,
-  input         int_1,
-  input         int_2,
-  input         int_3,
-  input         int_4,
+  input           int_0,
+  input           int_1,
+  input           int_2,
+  input           int_3,
+  input           int_4,
 
   output  [3:0]   arid,
   output  [31:0]  araddr,
