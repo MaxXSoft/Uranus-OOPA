@@ -62,7 +62,7 @@ module BTB(
 
   // output signals of module
   assign is_branch_out = is_btb_hit;
-  assign is_jump_out = is_btb_hit ? btb_is_jump_out : 0;
-  assign target_out = is_btb_hit ? btb_target_out : 0;
+  assign is_jump_out = is_btb_hit ? btb_is_jump_out[line_index] : 0;
+  assign target_out = is_btb_hit ? btb_target_out[line_index] : 0;
 
 endmodule // BTB
