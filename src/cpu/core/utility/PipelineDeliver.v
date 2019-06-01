@@ -21,10 +21,10 @@ module PipelineDeliver #(parameter
       last_status <= RST_VAL;
     end
     else if (flush) begin
-      last_status <= 0;
+      last_status <= RST_VAL;
     end
     else if (stall_current_stage && !stall_next_stage) begin
-      last_status <= 0;
+      last_status <= RST_VAL;
     end
     else if (!stall_current_stage) begin
       last_status <= in;
