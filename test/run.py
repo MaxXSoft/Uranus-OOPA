@@ -25,6 +25,11 @@ def get_mod_name(file):
     ans = re_modname.findall(f.read())
     return ans[0]
 
+def clean():
+  cmd = f'rm -f build/*'
+  if os.system(cmd):
+    exit(1)
+
 def compile(file, mod_name):
   cmd = f'{verilator} {file} -CFLAGS "-DMODULE_NAME=V{mod_name}"'
   if os.system(cmd):
@@ -48,9 +53,13 @@ if __name__ == '__main__':
   file = os.path.abspath(os.sys.argv[1])
   # change current working directory
   os.chdir(os.path.dirname(os.path.abspath(__file__)))
-  # compile and run
-  mod_name = get_mod_name(file)
-  verilator += detect_dir()
-  compile(file, mod_name)
-  make(mod_name)
-  run(mod_name)
+  # check option
+  if os.sys.argv[1].lower() == 'clean':
+    clean()
+  else:
+    # compile and run
+    mod_name = get_mod_name(file)
+    verilator += detect_dir()
+    compile(file, mod_name)
+    make(mod_name)
+    run(mod_name)
