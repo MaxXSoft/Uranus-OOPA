@@ -56,7 +56,8 @@ module BTB(
   assign btb_write_en = is_branch_in;
   generate
     for (i = 0; i < `BTB_SIZE; i = i + 1) begin
-      assign line_write_en[i] = btb_write_en ? line_index == i : 0;
+      assign line_write_en[i] = btb_write_en
+          ? inst_pc[`BTB_INDEX_SEL] == i : 0;
     end
   endgenerate
 

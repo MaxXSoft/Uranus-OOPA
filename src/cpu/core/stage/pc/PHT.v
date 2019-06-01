@@ -28,13 +28,25 @@ module PHT(
       end
     end
     else if (is_last_branch) begin
-      // if not saturated
-      if (!&counters[last_index] && |counters[last_index]) begin
+      if (&counters[last_index]) begin
+        // counter == 2'b11
+        if (!is_last_taken) begin
+          counters[last_index] <= counters[last_index] - 1;
+        end
+      end
+      else if (!|counters[last_index]) begin
+        // counter == 2'b00
         if (is_last_taken) begin
           counters[last_index] <= counters[last_index] + 1;
         end
-        else begin
+      end
+      else begin
+        // counter == 2'b01 || counter == 2'b10
+        if (!is_last_taken) begin
           counters[last_index] <= counters[last_index] - 1;
+        end
+        else begin
+          counters[last_index] <= counters[last_index] + 1;
         end
       end
     end
