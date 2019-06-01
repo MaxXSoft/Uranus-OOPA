@@ -3,7 +3,7 @@
 `include "bus.v"
 `include "branch.v"
 
-module PCBP(
+module PCIF(
   input               clk,
   input               rst,
   input               flush,
@@ -35,4 +35,4 @@ module PCBP(
     pc_in, pc_out
   );
 
-endmodule // PCBP
+endmodule // PCIF
