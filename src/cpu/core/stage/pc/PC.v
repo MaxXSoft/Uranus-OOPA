@@ -15,6 +15,10 @@ module PC(
   input   [`GHR_BUS]  last_pht_index,   // last index of PHT
   input   [`ADDR_BUS] inst_pc,          // last PC of instruction
   input   [`ADDR_BUS] target_in,        // last branch target
+  // control signals
+  input               flush,
+  input               stall,
+  input   [`ADDR_BUS] exc_pc,
   // output signals of module
   output              is_branch_taken,
   output  [`GHR_BUS]  pht_index_out,
@@ -74,7 +78,13 @@ module PC(
   assign is_branch_taken = btb_is_branch && (pht_is_taken || btb_is_jump);
 
   always @(*) begin
-    if (is_miss_in) begin
+    if (flush) begin
+      next_pc <= exc_pc;
+    end
+    else if (stall) begin
+      next_pc <= pc_reg;
+    end
+    else if (is_miss_in) begin
       next_pc <= target_in;
     end
     else if (is_branch_taken) begin
