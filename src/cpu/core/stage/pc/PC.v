@@ -11,7 +11,6 @@ module PC(
   input               is_branch_in,     // is last inst a branch
   input               is_jump_in,       // is 'j' or 'jal'
   input               is_taken_in,      // is last branch taken
-  input               is_miss_in,       // is last branch missed
   input   [`GHR_BUS]  last_pht_index,   // last index of PHT
   input   [`ADDR_BUS] inst_pc,          // last PC of instruction
   input   [`ADDR_BUS] target_in,        // last branch target
@@ -84,9 +83,6 @@ module PC(
     else if (stall) begin
       next_pc <= pc_reg;
     end
-    else if (is_miss_in) begin
-      next_pc <= target_in;
-    end
     else if (is_branch_taken) begin
       next_pc <= btb_target;
     end
@@ -101,7 +97,13 @@ module PC(
       pc_reg <= `INIT_PC + 4;
       pc_out_reg <= `INIT_PC;
     end
-    else begin
+    else if (flush) begin
+      pc_reg <= next_pc;
+      // fully reset when there is an exception
+      // otherwise (misprediction) produce a delay slot
+      pc_out_reg <= is_branch_in ? pc_out_reg : `INVALID_PC;
+    end
+    else if (!stall) begin
       pc_reg <= next_pc;
       pc_out_reg <= pc_reg;
     end
