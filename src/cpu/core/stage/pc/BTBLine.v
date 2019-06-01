@@ -21,8 +21,8 @@ module BTBLine(
 
   reg valid;
   reg is_jump;
-  reg [`BTB_PC_BUS] pc;
-  reg [`ADDR_BUS] target;
+  reg[`BTB_PC_BUS] pc;
+  reg[`ADDR_BUS] target;
   assign valid_out  = valid;
   assign pc_out     = pc;
   assign target_out = target;

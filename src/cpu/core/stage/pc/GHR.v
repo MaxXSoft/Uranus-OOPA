@@ -12,7 +12,7 @@ module GHR(
   output  [`GHR_BUS]  ghr_out
 );
 
-  reg [`GHR_BUS] ghr;
+  reg[`GHR_BUS] ghr;
   assign ghr_out = ghr;
 
   always @(posedge clk) begin

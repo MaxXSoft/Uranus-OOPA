@@ -22,8 +22,8 @@ module BTB(
   wire line_write_en[`BTB_SIZE - 1:0];
   wire btb_valid_out[`BTB_SIZE - 1:0];
   wire btb_is_jump_out[`BTB_SIZE - 1:0];
-  wire [`BTB_PC_BUS] btb_pc_out[`BTB_SIZE - 1:0];
-  wire [`ADDR_BUS] btb_target_out[`BTB_SIZE - 1:0];
+  wire[`BTB_PC_BUS] btb_pc_out[`BTB_SIZE - 1:0];
+  wire[`ADDR_BUS] btb_target_out[`BTB_SIZE - 1:0];
 
   // generate BTB lines
   genvar i;
@@ -46,7 +46,7 @@ module BTB(
   endgenerate
 
   // BTB line selector
-  wire [`BTB_INDEX_WIDTH - 1:0] line_index;
+  wire[`BTB_INDEX_WIDTH - 1:0] line_index;
   wire is_btb_hit;  
   assign line_index = pc_in[`BTB_INDEX_SEL];
   assign is_btb_hit = btb_valid_out[line_index]
