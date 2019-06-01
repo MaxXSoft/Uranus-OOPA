@@ -12,7 +12,7 @@ module PCBP(
   output  [`ADDR_BUS] pc_out
 );
 
-  PipelineDeliver #(`ADDR_BUS_WIDTH) ff_pc(
+  PipelineDeliverAsyn #(`ADDR_BUS_WIDTH) ff_pc(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     pc_in, pc_out

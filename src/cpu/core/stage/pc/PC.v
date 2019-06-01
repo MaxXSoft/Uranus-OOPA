@@ -4,11 +4,22 @@
 `include "exception.v"
 
 module PC(
+  input               clk,
   input               rst,
   input   [`ADDR_BUS] next_pc,
   output  [`ADDR_BUS] pc_out
 );
 
-  assign pc_out = !rst ? `INIT_PC : next_pc;
+  reg [`ADDR_BUS] pc;
+  assign pc_out = pc;
+
+  always @(posedge clk) begin
+    if (!rst) begin
+      pc <= `INIT_PC;
+    end
+    else begin
+      pc <= next_pc;
+    end
+  end
 
 endmodule // PC

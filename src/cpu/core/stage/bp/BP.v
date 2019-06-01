@@ -35,9 +35,9 @@ module BP(
   output  [`ADDR_BUS] btb_target_out,
   output  [`ADDR_BUS] btb_pc_out,
   // output signals of module
+  output  [`ADDR_BUS] next_pc_out,            // to PC stage (directly)
   output              is_branch_taken,        // to IF stage
   output  [`GHR_BUS]  current_pht_index_out,  // to IF stage
-  output  [`ADDR_BUS] next_pc_out,            // to PC stage
   output  [`ADDR_BUS] current_pc_out          // to IF stage
 );
 
