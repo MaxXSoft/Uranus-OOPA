@@ -47,6 +47,10 @@ module PC_tb(
     .inst_pc              (inst_pc),
     .target_in            (target_in),
 
+    .flush                (0),
+    .stall                (0),
+    .exc_pc               (0),
+
     .is_branch_taken      (is_branch_taken),
     .pht_index_out        (pht_index_out),
     .pc_out               (pc_out)
