@@ -13,7 +13,7 @@ module PC(
   input               is_taken_in,      // is last branch taken
   input               is_miss_in,       // is last branch missed
   input   [`GHR_BUS]  last_pht_index,   // last index of PHT
-  input   [`ADDR_BUS] inst_pc,          // last pc of instruction
+  input   [`ADDR_BUS] inst_pc,          // last PC of instruction
   input   [`ADDR_BUS] target_in,        // last branch target
   // output signals of module
   output              is_branch_taken,
@@ -21,9 +21,9 @@ module PC(
   output  [`ADDR_BUS] pc_out
 );
 
-  // PC register
-  reg[`ADDR_BUS] pc;
-  assign pc_out = pc;
+  // PC registers
+  reg[`ADDR_BUS] pc_reg, pc_out_reg;
+  assign pc_out = pc_out_reg;
 
   // GHR
   wire[`GHR_BUS] ghr_out;
@@ -39,7 +39,7 @@ module PC(
   // PHT
   wire[`GHR_BUS] pht_index;
   wire pht_is_taken;
-  assign pht_index = pc[`GHR_WIDTH + 1:2] ^ ghr_out;  // Gshare
+  assign pht_index = pc_out[`GHR_WIDTH + 1:2] ^ ghr_out;  // Gshare
   assign pht_index_out = pht_index;
 
   PHT pht(
@@ -63,7 +63,7 @@ module PC(
     .is_jump_in       (is_jump_in),
     .inst_pc          (inst_pc),
     .target_in        (target_in),
-    .pc_in            (pc),
+    .pc_in            (pc_out),
     .is_branch_out    (btb_is_branch),
     .is_jump_out      (btb_is_jump),
     .target_out       (btb_target)
@@ -74,27 +74,26 @@ module PC(
   assign is_branch_taken = btb_is_branch && (pht_is_taken || btb_is_jump);
 
   always @(*) begin
-    if (!rst) begin
-      next_pc <= `INIT_PC + 4;
-    end
-    else if (is_miss_in) begin
+    if (is_miss_in) begin
       next_pc <= target_in;
     end
     else if (is_branch_taken) begin
       next_pc <= btb_target;
     end
     else begin
-      next_pc <= pc + 4;
+      next_pc <= pc_reg + 4;
     end
   end
 
   // generate current PC
   always @(posedge clk) begin
     if (!rst) begin
-      pc <= `INIT_PC;
+      pc_reg <= `INIT_PC + 4;
+      pc_out_reg <= `INIT_PC;
     end
     else begin
-      pc <= next_pc;
+      pc_reg <= next_pc;
+      pc_out_reg <= pc_reg;
     end
   end
 
