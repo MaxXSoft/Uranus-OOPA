@@ -14,11 +14,12 @@ module PCBP_tb(
   // modules
   wire [31:0] pc_pc_out;
   wire [31:0] bp_pc_in;
-  wire [31:0] mod_next_pc;
+  wire [31:0] next_pc_out;
 
-  PC pc(
+  PC pc_stage(
+    .clk      (clk),
     .rst      (rst),
-    .next_pc  (mod_next_pc),
+    .next_pc  (next_pc_out),
     .pc_out   (pc_pc_out)
   );
 
@@ -37,7 +38,7 @@ module PCBP_tb(
   reg [31:0] inst_pc, target_in;
   wire is_branch_taken;
   wire [`GHR_BUS] current_pht_index_out;
-  wire [31:0] next_pc_out, current_pc_out;
+  wire [31:0] current_pc_out;
 
   wire mod_is_branch_taken;
   wire [`GHR_BUS] mod_current_pht_index;
@@ -106,11 +107,9 @@ module PCBP_tb(
     .stall_next_stage       (0),
     .is_branch_taken_in     (is_branch_taken),
     .current_pht_index_in   (current_pht_index_out),
-    .next_pc_in             (next_pc_out),
     .current_pc_in          (current_pc_out),
     .is_branch_taken_out    (mod_is_branch_taken),
     .current_pht_index_out  (mod_current_pht_index),
-    .next_pc_out            (mod_next_pc),
     .current_pc_out         (mod_current_pc)
   );
 
@@ -147,24 +146,29 @@ module PCBP_tb(
 
   // testbench
   always @(posedge clk) begin
-    if (!rst) begin
-      is_branch_in <= 0;
+    is_branch_in <= 0;
+    is_jump_in <= 0;
+    is_taken_in <= 0;
+    is_miss_in <= 0;
+    last_pht_index <= 0;
+    inst_pc <= 0;
+    target_in <= 0;
+
+    if (mod_current_pc == 32'hbfc00010) begin
+      is_branch_in <= 1;
       is_jump_in <= 0;
-      is_taken_in <= 0;
-      is_miss_in <= 0;
-      last_pht_index <= 0;
-      inst_pc <= 0;
-      target_in <= 0;
-    end
-    else begin
-      // TODO
+      is_taken_in <= 1;
+      is_miss_in <= 1;
+      last_pht_index <= mod_current_pht_index;
+      inst_pc <= mod_current_pc;
+      target_in <= 32'hbfc00124;
     end
 
-    `DISPLAY("mod_is_branch_taken", mod_is_branch_taken);
-    `DISPLAY("mod_current_pht_index", mod_current_pht_index);
-    `DISPLAY("mod_next_pc", mod_next_pc);
-    `DISPLAY("mod_current_pc", mod_current_pc);
-    if (tick >= 10) $finish;
+    `DISPLAY("mod_is_branch_taken   ", mod_is_branch_taken);
+    `DISPLAY("mod_current_pht_index ", mod_current_pht_index);
+    `DISPLAY("next_pc_out           ", next_pc_out);
+    `DISPLAY("**  mod_current_pc  **", mod_current_pc);
+    if (`TICK >= 20) $finish;
   end
 
 endmodule // PCBP_tb

@@ -11,13 +11,13 @@ module PC_tb(
   `GEN_TICK(clk, rst);
 
   // modules
-  reg [31:0] next_pc;
   wire [31:0] pc_out;
   wire [31:0] mod_pc_out;
 
-  PC pc(
+  PC pc_stage(
+    .clk      (clk),
     .rst      (rst),
-    .next_pc  (next_pc),
+    .next_pc  (mod_pc_out + 4),
     .pc_out   (pc_out)
   );
 
@@ -33,15 +33,8 @@ module PC_tb(
 
   // testbench
   always @(posedge clk) begin
-    if (!rst) begin
-      next_pc <= 32'hbfc00120;
-    end
-    else begin
-      next_pc <= next_pc + 4;
-    end
-
-    `DISPLAY("mod_pc_out", mod_pc_out);
-    if (tick >= 10) $finish;
+    `DISPLAY("mod_pc_out  ", mod_pc_out);
+    if (`TICK >= 10) $finish;
   end
 
 endmodule // PC_tb
