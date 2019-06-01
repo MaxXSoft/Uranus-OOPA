@@ -3,6 +3,18 @@
 `include "tb.v"
 `include "branch.v"
 
+`define ADD_BRANCH_CHECK(src, dst, jump, taken)               \
+    if (mod_pc == src && mod_is_branch_taken != taken) begin  \
+      $display("MISS! (0x%8h)", mod_pc);                      \
+      is_branch_in <= 1;                                      \
+      is_jump_in <= jump;                                     \
+      is_taken_in <= taken;                                   \
+      is_miss_in <= 1;                                        \
+      last_pht_index <= mod_pht_index;                        \
+      inst_pc <= mod_pc;                                      \
+      target_in <= dst;                                       \
+    end
+
 module PC_tb(
   input clk,
   input rst
@@ -13,15 +25,15 @@ module PC_tb(
 
   // modules
   reg is_branch_in, is_jump_in, is_taken_in, is_miss_in;
-  reg [`GHR_BUS] last_pht_index;
-  reg [31:0] inst_pc, target_in;
+  reg[`GHR_BUS] last_pht_index;
+  reg[31:0] inst_pc, target_in;
   wire is_branch_taken;
-  wire [`GHR_BUS] pht_index_out;
-  wire [31:0] pc_out;
+  wire[`GHR_BUS] pht_index_out;
+  wire[31:0] pc_out;
 
   wire mod_is_branch_taken;
-  wire [`GHR_BUS] mod_pht_index;
-  wire [31:0] mod_pc;
+  wire[`GHR_BUS] mod_pht_index;
+  wire[31:0] mod_pc;
 
   PC stage_pc(
     .clk                  (clk),
@@ -64,20 +76,8 @@ module PC_tb(
     inst_pc <= 0;
     target_in <= 0;
 
-    if (mod_pc == 32'hbfc00010 && !mod_is_branch_taken) begin
-      $display("miss!");
-      is_branch_in <= 1;
-      is_jump_in <= 0;
-      is_taken_in <= 1;
-      is_miss_in <= 1;
-      last_pht_index <= mod_pht_index;
-      inst_pc <= mod_pc;
-      target_in <= 32'hbfc00000;
-    end
+    `ADD_BRANCH_CHECK(32'hbfc00010, 32'hbfc00000, 0, 1);
 
-    // `DISPLAY("is_branch_in        ", is_branch_in);
-    // `DISPLAY("                    ", stage_pc.btb.is_branch_out);
-    // `DISPLAY("                    ", stage_pc.btb.inst_pc);
     // `DISPLAY("mod_is_branch_taken ", mod_is_branch_taken);
     // `DISPLAY("mod_pht_index       ", mod_pht_index);
     `DISPLAY("*****  mod_pc  *****", mod_pc);
