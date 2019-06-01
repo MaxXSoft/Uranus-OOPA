@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "bus.v"
+`include "exception.v"
 `include "branch.v"
 
 module PCIF(
@@ -29,7 +30,7 @@ module PCIF(
     pht_index_in, pht_index_out
   );
 
-  PipelineDeliver #(`ADDR_BUS_WIDTH) ff_pc(
+  PipelineDeliver #(`ADDR_BUS_WIDTH, 32'hffffffff) ff_pc(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     pc_in, pc_out
