@@ -25,7 +25,7 @@ module PipelineDeliverAsyn #(parameter WIDTH = 1) (
     stall_next <= stall_next_stage_in;
   end
 
-  reg [WIDTH - 1:0] last_status;
+  reg[WIDTH - 1:0] last_status;
   assign out = last_status;
 
   always @(*) begin

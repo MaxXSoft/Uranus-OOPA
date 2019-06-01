@@ -10,7 +10,7 @@ module PipelineDeliver #(parameter WIDTH = 1) (
     output  [WIDTH - 1:0]   out
 );
 
-    reg [WIDTH - 1:0] last_status;
+    reg[WIDTH - 1:0] last_status;
     assign out = last_status;
 
     always @(posedge clk) begin
