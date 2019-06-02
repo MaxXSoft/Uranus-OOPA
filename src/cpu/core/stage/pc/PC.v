@@ -18,7 +18,7 @@ module PC(
   input               flush,
   input               stall,
   input   [`ADDR_BUS] exc_pc,
-  // output signals of module
+  // output signals
   output              is_branch_taken,
   output  [`GHR_BUS]  pht_index_out,
   output  [`ADDR_BUS] pc_out
