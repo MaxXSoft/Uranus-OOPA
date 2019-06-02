@@ -26,7 +26,7 @@ module PC_tb(
   `GEN_TICK(clk, rst);
 
   // modules
-  reg is_branch_in, is_jump_in, is_taken_in, flush;
+  reg is_branch_in, is_jump_in, is_taken_in, flush, stall;
   reg[`GHR_BUS] last_pht_index;
   reg[`ADDR_BUS] inst_pc, target_in, exc_pc;
   wire is_branch_taken;
@@ -49,7 +49,7 @@ module PC_tb(
     .target_in            (target_in),
 
     .flush                (flush),
-    .stall                (0),
+    .stall                (stall),
     .exc_pc               (exc_pc),
 
     .is_branch_taken      (is_branch_taken),
@@ -61,8 +61,8 @@ module PC_tb(
     .clk                  (clk),
     .rst                  (rst),
     .flush                (flush),
-    .stall_current_stage  (0),
-    .stall_next_stage     (0),
+    .stall_current_stage  (stall),
+    .stall_next_stage     (stall),
     .is_branch_taken_in   (is_branch_taken),
     .pht_index_in         (pht_index_out),
     .pc_in                (pc_out),
@@ -80,9 +80,12 @@ module PC_tb(
     inst_pc <= 0;
     target_in <= 0;
     flush <= 0;
+    stall <= 0;
     exc_pc <= 0;
 
     `ADD_BRANCH_CHECK(32'hbfc00010, 32'hbfc00000, 0, 1);
+
+    if (`TICK >= 32'h4a && `TICK <= 32'h4e) stall <= 1;
 
     // `DISPLAY("mod_is_branch_taken ", mod_is_branch_taken);
     // `DISPLAY("mod_pht_index       ", mod_pht_index);

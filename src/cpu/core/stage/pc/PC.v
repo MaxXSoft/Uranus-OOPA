@@ -104,6 +104,9 @@ module PC(
       pc_out_reg <= is_branch_in ? pc_out_reg : `INVALID_PC;
     end
     else if (!stall) begin
+      // TODO:
+      // if there is a stall signal,
+      // check if the same instruction has been executed multiple times
       pc_reg <= next_pc;
       pc_out_reg <= pc_reg;
     end
