@@ -14,7 +14,10 @@
       end                               \
     end
 
-`define DISPLAY(name, val) \
+`define DISPLAY(name, val)              \
     $display("[%8h] %s = 0x%8h", `TICK, name, val)
+
+`define END_AT_TICK(tick)               \
+    if (`TICK >= tick) $finish
 
 `endif  // OOPA_TEST_INCLUDE_TB_V_

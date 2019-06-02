@@ -90,7 +90,7 @@ module PC_tb(
     // `DISPLAY("mod_is_branch_taken ", mod_is_branch_taken);
     // `DISPLAY("mod_pht_index       ", mod_pht_index);
     `DISPLAY("*****  mod_pc  *****", mod_pc);
-    if (`TICK >= 100) $finish;
+    `END_AT_TICK(100);
   end
 
 endmodule // PC_tb
