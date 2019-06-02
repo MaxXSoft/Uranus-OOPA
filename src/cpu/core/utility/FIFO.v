@@ -50,7 +50,7 @@ module FIFO #(parameter
     if (!rst) begin
       integer i;
       for (i = 0; i < kSize; i = i + 1) begin
-        fifo_mem <= 0;
+        fifo_mem[i] <= 0;
       end
     end
     else if (write_en) begin
