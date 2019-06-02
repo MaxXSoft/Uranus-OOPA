@@ -101,7 +101,7 @@ module PC(
       pc_reg <= next_pc;
       // fully reset when there is an exception
       // otherwise (misprediction) produce a delay slot
-      pc_out_reg <= is_branch_in ? pc_out_reg : `INVALID_PC;
+      pc_out_reg <= is_branch_in ? inst_pc + 4 : `INVALID_PC;
     end
     else if (!stall) begin
       // TODO:
