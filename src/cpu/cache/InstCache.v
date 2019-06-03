@@ -1,11 +1,9 @@
 `timescale 1ns / 1ps
 
 `include "bus.v"
+`include "cache.v"
 
-module InstCache #(parameter
-  kLineWidth = 6,     // 2^6 = 64 bytes/line
-  kCacheWidth = 6     // 2^6 = 64 lines
-) (
+module InstCache(
   input               clk,
   input               rst,
   // cache control
@@ -58,9 +56,8 @@ module InstCache #(parameter
   output              bready
 );
 
-  localparam kLineCount = 2 ** kCacheWidth;
-  localparam kIndexWidth = kLineWidth - 2;
-  localparam kTagWidth = `ADDR_BUS_WIDTH - kLineWidth - kCacheWidth;
+  localparam kIndexWidth = `ICACHE_LINE_WIDTH - 2,
+      kTagWidth = `ADDR_BUS_WIDTH - `ICACHE_LINE_WIDTH - `ICACHE_WIDTH;
 
   // TODO
   // reference: Uranus Zero's unfinished instruction cache module
