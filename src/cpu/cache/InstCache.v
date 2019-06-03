@@ -3,8 +3,8 @@
 `include "bus.v"
 
 module InstCache #(parameter
-  kLineWidth = 6,         // 2^6 = 64 bytes/line
-  kCacheWidth = 6         // 2^6 = 64 lines
+  kLineWidth = 6,     // 2^6 = 64 bytes/line
+  kCacheWidth = 6     // 2^6 = 64 lines
 ) (
   input               clk,
   input               rst,
