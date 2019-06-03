@@ -7,6 +7,6 @@
 `define EXC_OFFSET          32'h00000180
 
 // invalid PC value in order to invalidate PC stage
-`define INVALID_PC        32'hffffffff
+`define INVALID_PC          32'hffffffff
 
 `endif  // OOPA_CPU_INCLUDE_EXCEPTION_V_
