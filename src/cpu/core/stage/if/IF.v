@@ -5,7 +5,7 @@
 `include "branch.v"
 
 module IF(
-  input rst,
+  input               rst,
   // from PC stage
   input               is_branch_taken_in,
   input   [`GHR_BUS]  pht_index_in,
