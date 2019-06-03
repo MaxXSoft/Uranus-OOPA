@@ -8,6 +8,7 @@ module FIFO #(parameter
 ) (
   input                   clk,
   input                   rst,
+  input                   flush,
   input                   write_en,
   input   [kWidth - 1:0]  write_data,
   input                   read_en,
@@ -22,7 +23,7 @@ module FIFO #(parameter
   reg[kAddrWidth:0] write_ptr, read_ptr;
 
   always @(posedge clk) begin
-    if (!rst) begin
+    if (!rst || flush) begin
       write_ptr <= 0;
       read_ptr <= 0;
     end
@@ -47,7 +48,8 @@ module FIFO #(parameter
   assign read_data = read_en ? fifo_mem[read_ptr[kAddrWidth - 1:0]] : 0;
 
   always @(posedge clk) begin
-    if (!rst) begin
+    if (!rst || flush) begin
+      // TODO: remove?
       integer i;
       for (i = 0; i < kSize; i = i + 1) begin
         fifo_mem[i] <= 0;

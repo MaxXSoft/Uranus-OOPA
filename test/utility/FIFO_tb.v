@@ -20,6 +20,7 @@ module FIFO_tb(
   ) fifo(
     .clk          (clk),
     .rst          (rst),
+    .flush        (0),
     .write_en     (write_en),
     .write_data   (write_data),
     .read_en      (read_en),
