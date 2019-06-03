@@ -14,6 +14,6 @@ Uranus OOPA (Out-of-Order Pepper Architecture) is next generation Uranus MIPS pr
 
 When using Xilinx Vivado, you should add include path (`src/cpu/include`) manually to your project. See [this](https://www.xilinx.com/support/answers/54006.html).
 
-## License
+## Copyright & License
 
-Copyright (C) 2018-2019 USTB NSCSCC Team.
+Copyright (C) 2018-2019 USTB NSCSCC Team. License GPLv3.
