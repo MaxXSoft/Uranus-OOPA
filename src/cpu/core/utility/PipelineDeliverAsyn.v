@@ -25,21 +25,20 @@ module PipelineDeliverAsyn #(parameter WIDTH = 1) (
     stall_next <= stall_next_stage_in;
   end
 
-  reg[WIDTH - 1:0] last_status;
-  assign out = last_status;
+  reg[WIDTH - 1:0] out;
 
   always @(*) begin
     if (!rst) begin
-      last_status <= 0;
+      out <= 0;
     end
     else if (flush) begin
-      last_status <= 0;
+      out <= 0;
     end
     else if (stall_current_stage && !stall_next_stage) begin
-      last_status <= 0;
+      out <= 0;
     end
     else if (!stall_current_stage) begin
-      last_status <= in;
+      out <= in;
     end
   end
 

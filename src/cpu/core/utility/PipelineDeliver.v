@@ -13,21 +13,20 @@ module PipelineDeliver #(parameter
   output  [kWidth - 1:0]  out
 );
 
-  reg[kWidth - 1:0] last_status;
-  assign out = last_status;
+  reg[kWidth - 1:0] out;
 
   always @(posedge clk) begin
     if (!rst) begin
-      last_status <= kRstVal;
+      out <= kRstVal;
     end
     else if (flush) begin
-      last_status <= kRstVal;
+      out <= kRstVal;
     end
     else if (stall_current_stage && !stall_next_stage) begin
-      last_status <= kRstVal;
+      out <= kRstVal;
     end
     else if (!stall_current_stage) begin
-      last_status <= in;
+      out <= in;
     end
   end
 
