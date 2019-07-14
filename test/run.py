@@ -31,19 +31,19 @@ def run_cmd(cmd):
     exit(1)
 
 def clean():
-  cmd = f'rm -f build/*'
+  cmd = 'rm -f build/*'
   run_cmd(cmd)
 
 def compile(file, mod_name):
-  cmd = f'{verilator} {file} -CFLAGS "-DMODULE_NAME=V{mod_name}"'
+  cmd = '{} {} -CFLAGS "-DMODULE_NAME=V{}"'.format(verilator, file, mod_name)
   run_cmd(cmd)
 
 def make(mod_name):
-  cmd = f'{make_cmd} -f V{mod_name}.mk'
+  cmd = '{} -f V{}.mk'.format(make_cmd, mod_name)
   run_cmd(cmd)
 
 def run(mod_name, is_interactive=False):
-  cmd = f'build/V{mod_name}'
+  cmd = 'build/V{}'.format(mod_name)
   if is_interactive:
     cmd += ' -i'
   run_cmd(cmd)
