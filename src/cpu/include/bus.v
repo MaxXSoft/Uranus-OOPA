@@ -38,5 +38,7 @@
 `define FUNCT_BUS               `MAKE_BUS(`FUNCT_BUS_WIDTH)
 `define SHAMT_BUS_WIDTH         5
 `define SHAMT_BUS               `MAKE_BUS(`SHAMT_BUS_WIDTH)
+`define JUMP_ADDR_WIDTH         26
+`define JUMP_ADDR               `MAKE_BUS(`JUMP_ADDR_WIDTH)
 
 `endif  // OOPA_CPU_INCLUDE_BUS_V_

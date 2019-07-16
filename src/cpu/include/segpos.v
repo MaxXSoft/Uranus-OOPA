@@ -29,4 +29,7 @@
 // funct
 `define SEG_FUNCT    5:0
 
+// jump address (instr_index)
+`define SEG_JUMP     25:0
+
 `endif  // OOPA_CPU_INCLUDE_SEGPOS_V_
