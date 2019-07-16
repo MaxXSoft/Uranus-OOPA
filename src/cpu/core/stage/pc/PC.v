@@ -8,7 +8,7 @@ module PC(
   input               clk,
   input               rst,
   // from ID
-  input               is_branch_in,     // is last inst a branch
+  input               is_branch_in,     // is last inst a branch/jump
   input               is_jump_in,       // is 'j' or 'jal'
   input               is_taken_in,      // is last branch taken
   input   [`GHR_BUS]  last_pht_index,   // last index of PHT
