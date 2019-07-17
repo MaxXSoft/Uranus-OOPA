@@ -18,8 +18,8 @@ module RegGen(
   input                     is_cp0,
   input   [`FUNCT_BUS]      funct,
   // regfile read & write
-  input                     reg_read_is_rsid_1,
-  input                     reg_read_is_rsid_2,
+  input                     reg_read_is_ref_1,
+  input                     reg_read_is_ref_2,
   input   [`DATA_BUS]       reg_read_data_1,
   input   [`DATA_BUS]       reg_read_data_2,
   output                    reg_read_en_1,
@@ -29,8 +29,8 @@ module RegGen(
   output                    reg_write_en,
   output  [`REG_ADDR_BUS]   reg_write_addr,
   // operands output
-  output                    operand_is_rsid_1,
-  output                    operand_is_rsid_2,
+  output                    operand_is_ref_1,
+  output                    operand_is_ref_2,
   output  [`DATA_BUS]       operand_data_1,
   output  [`DATA_BUS]       operand_data_2
 );
@@ -38,7 +38,7 @@ module RegGen(
   reg reg_read_en_1, reg_read_en_2, reg_write_en;
   reg[`REG_ADDR_BUS] reg_read_addr_1, reg_read_addr_2, reg_write_addr;
 
-  reg operand_is_rsid_1, operand_is_rsid_2;
+  reg operand_is_ref_1, operand_is_ref_2;
   reg[`DATA_BUS] operand_data_1, operand_data_2;
 
   // information about immediate number
@@ -118,7 +118,7 @@ module RegGen(
   // generate operand_1
   always @(*) begin
     if (!rst) begin
-      operand_is_rsid_1 <= 0;
+      operand_is_ref_1 <= 0;
       operand_data_1 <= 0;
     end
     else begin
@@ -130,30 +130,30 @@ module RegGen(
         `OP_LB, `OP_LH, `OP_LW, `OP_LBU,
         `OP_LHU, `OP_SB, `OP_SH, `OP_SW,
         `OP_SPECIAL2: begin
-          operand_is_rsid_1 <= reg_read_is_rsid_1;
+          operand_is_ref_1 <= reg_read_is_ref_1;
           operand_data_1 <= reg_read_data_1;
         end
         `OP_SPECIAL: begin
           if (funct == `FUNCT_JALR) begin
-            operand_is_rsid_1 <= 0;
+            operand_is_ref_1 <= 0;
             operand_data_1 <= link_addr;
           end
           else begin
-            operand_is_rsid_1 <= reg_read_is_rsid_1;
+            operand_is_ref_1 <= reg_read_is_ref_1;
             operand_data_1 <= reg_read_data_1;
           end
         end
         `OP_REGIMM: begin
-          operand_is_rsid_1 <= 0;
+          operand_is_ref_1 <= 0;
           operand_data_1 <= rt == `REGIMM_BLTZAL ||
                             rt == `REGIMM_BGEZAL ? link_addr : 0;
         end
         `OP_JAL: begin
-          operand_is_rsid_1 <= 0;
+          operand_is_ref_1 <= 0;
           operand_data_1 <= link_addr;
         end
         default: begin
-          operand_is_rsid_1 <= 0;
+          operand_is_ref_1 <= 0;
           operand_data_1 <= 0;
         end
     endcase
@@ -163,17 +163,17 @@ module RegGen(
   // generate operand_2
   always @(*) begin
     if (!rst) begin
-      operand_is_rsid_2 <= 0;
+      operand_is_ref_2 <= 0;
       operand_data_2 <= 0;
     end
     else begin
       case (op)
         `OP_ORI, `OP_ANDI, `OP_XORI: begin
-          operand_is_rsid_2 <= 0;
+          operand_is_ref_2 <= 0;
           operand_data_2 <= zero_extended_imm;
         end 
         `OP_LUI: begin
-          operand_is_rsid_2 <= 0;
+          operand_is_ref_2 <= 0;
           operand_data_2 <= zero_extended_imm_hi;
         end
         // arithmetic & logic (immediate)
@@ -181,15 +181,15 @@ module RegGen(
         // memory accessing
         `OP_LB, `OP_LH, `OP_LW, `OP_LBU,
         `OP_LHU, `OP_SB, `OP_SH, `OP_SW: begin
-          operand_is_rsid_2 <= 0;
+          operand_is_ref_2 <= 0;
           operand_data_2 <= sign_extended_imm;
         end
         `OP_SPECIAL, `OP_SPECIAL2: begin
-          operand_is_rsid_2 <= reg_read_is_rsid_2;
+          operand_is_ref_2 <= reg_read_is_ref_2;
           operand_data_2 <= reg_read_data_2;
         end
         default: begin
-          operand_is_rsid_2 <= 0;
+          operand_is_ref_2 <= 0;
           operand_data_2 <= 0;
         end
       endcase

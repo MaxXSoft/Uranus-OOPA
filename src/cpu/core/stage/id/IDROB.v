@@ -22,18 +22,18 @@ module IDROB(
   input                   mem_read_flag_in,
   input                   mem_sign_ext_flag_in,
   input   [3:0]           mem_sel_in,
-  input                   mem_write_is_rsid_in,
+  input                   mem_write_is_ref_in,
   input   [`DATA_BUS]     mem_write_data_in,
   input   [`CP0_ADDR_BUS] cp0_addr_in,
   input                   cp0_read_flag_in,
   input                   cp0_write_flag_in,
-  input                   cp0_write_is_rsid_in,
+  input                   cp0_write_is_ref_in,
   input   [`DATA_BUS]     cp0_write_data_in,
   input   [`EXC_TYPE_BUS] exception_type_in,
   input   [`FUNCT_BUS]    funct_in,
   input   [`SHAMT_BUS]    shamt_in,
-  input                   operand_is_rsid_1_in,
-  input                   operand_is_rsid_2_in,
+  input                   operand_is_ref_1_in,
+  input                   operand_is_ref_2_in,
   input   [`DATA_BUS]     operand_data_1_in,
   input   [`DATA_BUS]     operand_data_2_in,
   input   [`ADDR_BUS]     pc_in,
@@ -50,18 +50,18 @@ module IDROB(
   output                  mem_read_flag_out,
   output                  mem_sign_ext_flag_out,
   output  [3:0]           mem_sel_out,
-  output                  mem_write_is_rsid_out,
+  output                  mem_write_is_ref_out,
   output  [`DATA_BUS]     mem_write_data_out,
   output  [`CP0_ADDR_BUS] cp0_addr_out,
   output                  cp0_read_flag_out,
   output                  cp0_write_flag_out,
-  output                  cp0_write_is_rsid_out,
+  output                  cp0_write_is_ref_out,
   output  [`DATA_BUS]     cp0_write_data_out,
   output  [`EXC_TYPE_BUS] exception_type_out,
   output  [`FUNCT_BUS]    funct_out,
   output  [`SHAMT_BUS]    shamt_out,
-  output                  operand_is_rsid_1_out,
-  output                  operand_is_rsid_2_out,
+  output                  operand_is_ref_1_out,
+  output                  operand_is_ref_2_out,
   output  [`DATA_BUS]     operand_data_1_out,
   output  [`DATA_BUS]     operand_data_2_out,
   output  [`ADDR_BUS]     pc_out
@@ -145,10 +145,10 @@ module IDROB(
     mem_sel_in, mem_sel_out
   );
 
-  PipelineDeliver #(1) ff_mem_write_is_rsid(
+  PipelineDeliver #(1) ff_mem_write_is_ref(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
-    mem_write_is_rsid_in, mem_write_is_rsid_out
+    mem_write_is_ref_in, mem_write_is_ref_out
   );
 
   PipelineDeliver #(`DATA_BUS_WIDTH) ff_mem_write_data(
@@ -175,10 +175,10 @@ module IDROB(
     cp0_write_flag_in, cp0_write_flag_out
   );
 
-  PipelineDeliver #(1) ff_cp0_write_is_rsid(
+  PipelineDeliver #(1) ff_cp0_write_is_ref(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
-    cp0_write_is_rsid_in, cp0_write_is_rsid_out
+    cp0_write_is_ref_in, cp0_write_is_ref_out
   );
 
   PipelineDeliver #(`DATA_BUS_WIDTH) ff_cp0_write_data(
@@ -205,16 +205,16 @@ module IDROB(
     shamt_in, shamt_out
   );
 
-  PipelineDeliver #(1) ff_operand_is_rsid_1(
+  PipelineDeliver #(1) ff_operand_is_ref_1(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
-    operand_is_rsid_1_in, operand_is_rsid_1_out
+    operand_is_ref_1_in, operand_is_ref_1_out
   );
 
-  PipelineDeliver #(1) ff_operand_is_rsid_2(
+  PipelineDeliver #(1) ff_operand_is_ref_2(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
-    operand_is_rsid_2_in, operand_is_rsid_2_out
+    operand_is_ref_2_in, operand_is_ref_2_out
   );
 
   PipelineDeliver #(`DATA_BUS_WIDTH) ff_operand_data_1(

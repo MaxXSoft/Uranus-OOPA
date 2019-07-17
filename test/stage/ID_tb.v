@@ -33,18 +33,18 @@ module ID_tb(
   wire                id_mem_read_flag;
   wire                id_mem_sign_ext_flag;
   wire[3:0]           id_mem_sel;
-  wire                id_mem_write_is_rsid;
+  wire                id_mem_write_is_ref;
   wire[`DATA_BUS]     id_mem_write_data;
   wire[`CP0_ADDR_BUS] id_cp0_addr;
   wire                id_cp0_read_flag;
   wire                id_cp0_write_flag;
-  wire                id_cp0_write_is_rsid;
+  wire                id_cp0_write_is_ref;
   wire[`DATA_BUS]     id_cp0_write_data;
   wire[`EXC_TYPE_BUS] id_exception_type;
   wire[`FUNCT_BUS]    id_funct;
   wire[`SHAMT_BUS]    id_shamt;
-  wire                id_operand_is_rsid_1;
-  wire                id_operand_is_rsid_2;
+  wire                id_operand_is_ref_1;
+  wire                id_operand_is_ref_2;
   wire[`DATA_BUS]     id_operand_data_1;
   wire[`DATA_BUS]     id_operand_data_2;
   wire[`ADDR_BUS]     id_pc;
@@ -63,18 +63,18 @@ module ID_tb(
   wire                idrob_mem_read_flag;
   wire                idrob_mem_sign_ext_flag;
   wire[3:0]           idrob_mem_sel;
-  wire                idrob_mem_write_is_rsid;
+  wire                idrob_mem_write_is_ref;
   wire[`DATA_BUS]     idrob_mem_write_data;
   wire[`CP0_ADDR_BUS] idrob_cp0_addr;
   wire                idrob_cp0_read_flag;
   wire                idrob_cp0_write_flag;
-  wire                idrob_cp0_write_is_rsid;
+  wire                idrob_cp0_write_is_ref;
   wire[`DATA_BUS]     idrob_cp0_write_data;
   wire[`EXC_TYPE_BUS] idrob_exception_type;
   wire[`FUNCT_BUS]    idrob_funct;
   wire[`SHAMT_BUS]    idrob_shamt;
-  wire                idrob_operand_is_rsid_1;
-  wire                idrob_operand_is_rsid_2;
+  wire                idrob_operand_is_ref_1;
+  wire                idrob_operand_is_ref_2;
   wire[`DATA_BUS]     idrob_operand_data_1;
   wire[`DATA_BUS]     idrob_operand_data_2;
   wire[`ADDR_BUS]     idrob_pc;
@@ -87,8 +87,8 @@ module ID_tb(
     .pc_in                      (pc),
     .inst_in                    (inst),
 
-    .reg_read_is_rsid_1         (0),
-    .reg_read_is_rsid_2         (0),
+    .reg_read_is_ref_1         (0),
+    .reg_read_is_ref_2         (0),
     .reg_read_data_1            (32'h12345678),
     .reg_read_data_2            (32'habcdef00),
     .reg_read_en_1              (id_reg_read_en_1),
@@ -111,21 +111,21 @@ module ID_tb(
     .mem_read_flag              (id_mem_read_flag),
     .mem_sign_ext_flag          (id_mem_sign_ext_flag),
     .mem_sel                    (id_mem_sel),
-    .mem_write_is_rsid          (id_mem_write_is_rsid),
+    .mem_write_is_ref          (id_mem_write_is_ref),
     .mem_write_data             (id_mem_write_data),
 
     .cp0_addr                   (id_cp0_addr),
     .cp0_read_flag              (id_cp0_read_flag),
     .cp0_write_flag             (id_cp0_write_flag),
-    .cp0_write_is_rsid          (id_cp0_write_is_rsid),
+    .cp0_write_is_ref          (id_cp0_write_is_ref),
     .cp0_write_data             (id_cp0_write_data),
 
     .exception_type             (id_exception_type),
 
     .funct                      (id_funct),
     .shamt                      (id_shamt),
-    .operand_is_rsid_1          (id_operand_is_rsid_1),
-    .operand_is_rsid_2          (id_operand_is_rsid_2),
+    .operand_is_ref_1          (id_operand_is_ref_1),
+    .operand_is_ref_2          (id_operand_is_ref_2),
     .operand_data_1             (id_operand_data_1),
     .operand_data_2             (id_operand_data_2),
     .pc_out                     (id_pc)
@@ -151,18 +151,18 @@ module ID_tb(
     .mem_read_flag_in               (id_mem_read_flag),
     .mem_sign_ext_flag_in           (id_mem_sign_ext_flag),
     .mem_sel_in                     (id_mem_sel),
-    .mem_write_is_rsid_in           (id_mem_write_is_rsid),
+    .mem_write_is_ref_in           (id_mem_write_is_ref),
     .mem_write_data_in              (id_mem_write_data),
     .cp0_addr_in                    (id_cp0_addr),
     .cp0_read_flag_in               (id_cp0_read_flag),
     .cp0_write_flag_in              (id_cp0_write_flag),
-    .cp0_write_is_rsid_in           (id_cp0_write_is_rsid),
+    .cp0_write_is_ref_in           (id_cp0_write_is_ref),
     .cp0_write_data_in              (id_cp0_write_data),
     .exception_type_in              (id_exception_type),
     .funct_in                       (id_funct),
     .shamt_in                       (id_shamt),
-    .operand_is_rsid_1_in           (id_operand_is_rsid_1),
-    .operand_is_rsid_2_in           (id_operand_is_rsid_2),
+    .operand_is_ref_1_in           (id_operand_is_ref_1),
+    .operand_is_ref_2_in           (id_operand_is_ref_2),
     .operand_data_1_in              (id_operand_data_1),
     .operand_data_2_in              (id_operand_data_2),
     .pc_in                          (id_pc),
@@ -180,18 +180,18 @@ module ID_tb(
     .mem_read_flag_out              (idrob_mem_read_flag),
     .mem_sign_ext_flag_out          (idrob_mem_sign_ext_flag),
     .mem_sel_out                    (idrob_mem_sel),
-    .mem_write_is_rsid_out          (idrob_mem_write_is_rsid),
+    .mem_write_is_ref_out          (idrob_mem_write_is_ref),
     .mem_write_data_out             (idrob_mem_write_data),
     .cp0_addr_out                   (idrob_cp0_addr),
     .cp0_read_flag_out              (idrob_cp0_read_flag),
     .cp0_write_flag_out             (idrob_cp0_write_flag),
-    .cp0_write_is_rsid_out          (idrob_cp0_write_is_rsid),
+    .cp0_write_is_ref_out          (idrob_cp0_write_is_ref),
     .cp0_write_data_out             (idrob_cp0_write_data),
     .exception_type_out             (idrob_exception_type),
     .funct_out                      (idrob_funct),
     .shamt_out                      (idrob_shamt),
-    .operand_is_rsid_1_out          (idrob_operand_is_rsid_1),
-    .operand_is_rsid_2_out          (idrob_operand_is_rsid_2),
+    .operand_is_ref_1_out          (idrob_operand_is_ref_1),
+    .operand_is_ref_2_out          (idrob_operand_is_ref_2),
     .operand_data_1_out             (idrob_operand_data_1),
     .operand_data_2_out             (idrob_operand_data_2),
     .pc_out                         (idrob_pc)
@@ -273,21 +273,21 @@ module ID_tb(
       `DISPLAY("  mem_read_flag     ", idrob_mem_read_flag);
       `DISPLAY("  mem_sign_ext_flag ", idrob_mem_sign_ext_flag);
       `DISPLAY("  mem_sel           ", idrob_mem_sel);
-      `DISPLAY("  mem_write_is_rsid ", idrob_mem_write_is_rsid);
+      `DISPLAY("  mem_write_is_ref ", idrob_mem_write_is_ref);
       `DISPLAY("  mem_write_data    ", idrob_mem_write_data);
       $display("CP0 info");
       `DISPLAY("  cp0_addr          ", idrob_cp0_addr);
       `DISPLAY("  cp0_read_flag     ", idrob_cp0_read_flag);
       `DISPLAY("  cp0_write_flag    ", idrob_cp0_write_flag);
-      `DISPLAY("  cp0_write_is_rsid ", idrob_cp0_write_is_rsid);
+      `DISPLAY("  cp0_write_is_ref ", idrob_cp0_write_is_ref);
       `DISPLAY("  cp0_write_data    ", idrob_cp0_write_data);
       $display("exception info");
       `DISPLAY("  exception_type    ", idrob_exception_type);
       $display("to ROB stage");
       `DISPLAY("  funct             ", idrob_funct);
       `DISPLAY("  shamt             ", idrob_shamt);
-      `DISPLAY("  operand_is_rsid_1 ", idrob_operand_is_rsid_1);
-      `DISPLAY("  operand_is_rsid_2 ", idrob_operand_is_rsid_2);
+      `DISPLAY("  operand_is_ref_1 ", idrob_operand_is_ref_1);
+      `DISPLAY("  operand_is_ref_2 ", idrob_operand_is_ref_2);
       `DISPLAY("  operand_data_1    ", idrob_operand_data_1);
       `DISPLAY("  operand_data_2    ", idrob_operand_data_2);
       `DISPLAY("  pc                ", idrob_pc);

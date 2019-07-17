@@ -13,17 +13,17 @@ module CP0Gen(
   input   [`CP0_SEL_BUS]  sel,
   input                   is_cp0,
   // regfile reader
-  input                   reg_read_is_rsid_1,
+  input                   reg_read_is_ref_1,
   input   [`DATA_BUS]     reg_read_data_1,
   // CP0 info
   output  [`CP0_ADDR_BUS] cp0_addr,
   output                  cp0_read_flag,
   output                  cp0_write_flag,
-  output                  cp0_write_is_rsid,
+  output                  cp0_write_is_ref,
   output  [`DATA_BUS]     cp0_write_data
 );
 
-  reg cp0_read_flag, cp0_write_flag, cp0_write_is_rsid;
+  reg cp0_read_flag, cp0_write_flag, cp0_write_is_ref;
   reg[`CP0_ADDR_BUS] cp0_addr;
   reg[`DATA_BUS] cp0_write_data;
 
@@ -65,23 +65,23 @@ module CP0Gen(
   // generate coprocessor register write data
   always @(*) begin
     if (!rst) begin
-      cp0_write_is_rsid <= 0;
+      cp0_write_is_ref <= 0;
       cp0_write_data <= 0;
     end
     else begin
       case (op)
         `OP_CP0: begin
           if (rs == `CP0_MTC0 && is_cp0) begin
-            cp0_write_is_rsid <= reg_read_is_rsid_1;
+            cp0_write_is_ref <= reg_read_is_ref_1;
             cp0_write_data <= reg_read_data_1;
           end
           else begin
-            cp0_write_is_rsid <= 0;
+            cp0_write_is_ref <= 0;
             cp0_write_data <= 0;
           end
         end
         default: begin
-          cp0_write_is_rsid <= 0;
+          cp0_write_is_ref <= 0;
           cp0_write_data <= 0;
         end
       endcase

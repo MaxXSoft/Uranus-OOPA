@@ -8,18 +8,18 @@ module MemGen(
   // instruction info
   input   [`INST_OP_BUS]  op,
   // regfile reader
-  input                   reg_read_is_rsid_2,
+  input                   reg_read_is_ref_2,
   input   [`DATA_BUS]     reg_read_data_2,
   // memory accessing info
   output                  mem_write_flag,
   output                  mem_read_flag,
   output                  mem_sign_ext_flag,
   output  [3:0]           mem_sel,
-  output                  mem_write_is_rsid,
+  output                  mem_write_is_ref,
   output  [`DATA_BUS]     mem_write_data
 );
 
-  reg mem_write_flag, mem_read_flag, mem_sign_ext_flag, mem_write_is_rsid;
+  reg mem_write_flag, mem_read_flag, mem_sign_ext_flag, mem_write_is_ref;
   reg[3:0] mem_sel;
   reg[`DATA_BUS] mem_write_data;
 
@@ -78,17 +78,17 @@ module MemGen(
   // generate data to be written to memory
   always @(*) begin
     if (!rst) begin
-      mem_write_is_rsid <= 0;
+      mem_write_is_ref <= 0;
       mem_write_data <= 0;
     end
     else begin
       case (op)
         `OP_SB, `OP_SH, `OP_SW: begin
-          mem_write_is_rsid <= reg_read_is_rsid_2;
+          mem_write_is_ref <= reg_read_is_ref_2;
           mem_write_data <= reg_read_data_2;
         end
         default: begin
-          mem_write_is_rsid <= 0;
+          mem_write_is_ref <= 0;
           mem_write_data <= 0;
         end
       endcase

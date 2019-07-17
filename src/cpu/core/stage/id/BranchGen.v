@@ -23,8 +23,8 @@ module BranchGen(
   input   [`FUNCT_BUS]      funct,
   input   [`JUMP_ADDR_BUS]  jump_addr,
   // regfile reader
-  input                     reg_read_is_rsid_1,
-  input                     reg_read_is_rsid_2,
+  input                     reg_read_is_ref_1,
+  input                     reg_read_is_ref_2,
   input   [`DATA_BUS]       reg_read_data_1,
   input   [`DATA_BUS]       reg_read_data_2,
   // branch info
@@ -64,7 +64,7 @@ module BranchGen(
             is_branch <= 1;
             is_jump <= 1;
             is_taken <= 1;
-            is_determined <= !reg_read_is_rsid_1;
+            is_determined <= !reg_read_is_ref_1;
             target <= reg_read_data_1;
           end
           else begin
@@ -76,7 +76,7 @@ module BranchGen(
           end
         end
         `OP_BEQ: begin
-          if (!reg_read_is_rsid_1 && !reg_read_is_rsid_2) begin
+          if (!reg_read_is_ref_1 && !reg_read_is_ref_2) begin
             is_taken <= reg_read_data_1 == reg_read_data_2;
             is_determined <= 1;
           end
@@ -89,7 +89,7 @@ module BranchGen(
           target <= pc_plus_4 + branch_offset;
         end
         `OP_BGTZ: begin
-          if (!reg_read_is_rsid_1) begin
+          if (!reg_read_is_ref_1) begin
             is_taken <= !reg_read_data_1[31] && |reg_read_data_1;
             is_determined <= 1;
           end
@@ -102,7 +102,7 @@ module BranchGen(
           target <= pc_plus_4 + branch_offset;
         end
         `OP_BLEZ: begin
-          if (!reg_read_is_rsid_1) begin
+          if (!reg_read_is_ref_1) begin
             is_taken <= reg_read_data_1[31] || !(|reg_read_data_1);
             is_determined <= 1;
           end
@@ -115,7 +115,7 @@ module BranchGen(
           target <= pc_plus_4 + branch_offset;
         end
         `OP_BNE: begin
-          if (!reg_read_is_rsid_1 && !reg_read_is_rsid_2) begin
+          if (!reg_read_is_ref_1 && !reg_read_is_ref_2) begin
             is_taken <= reg_read_data_1 != reg_read_data_2;
             is_determined <= 1;
           end
@@ -130,7 +130,7 @@ module BranchGen(
         `OP_REGIMM: begin
           case (rt)
             `REGIMM_BLTZ, `REGIMM_BLTZAL: begin
-              if (!reg_read_is_rsid_1) begin
+              if (!reg_read_is_ref_1) begin
                 is_taken <= reg_read_data_1[31];
                 is_determined <= 1;
               end
@@ -143,7 +143,7 @@ module BranchGen(
               target <= pc_plus_4 + branch_offset;
             end
             `REGIMM_BGEZ, `REGIMM_BGEZAL: begin
-              if (!reg_read_is_rsid_1) begin
+              if (!reg_read_is_ref_1) begin
                 is_taken <= !reg_read_data_1[31];
                 is_determined <= 1;
               end

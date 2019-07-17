@@ -13,8 +13,8 @@ module ID(
   input   [`ADDR_BUS]     pc_in,
   input   [`INST_BUS]     inst_in,
   // regfile reader
-  input                   reg_read_is_rsid_1,
-  input                   reg_read_is_rsid_2,
+  input                   reg_read_is_ref_1,
+  input                   reg_read_is_ref_2,
   input   [`DATA_BUS]     reg_read_data_1,
   input   [`DATA_BUS]     reg_read_data_2,
   output                  reg_read_en_1,
@@ -38,21 +38,21 @@ module ID(
   output                  mem_read_flag,
   output                  mem_sign_ext_flag,
   output  [3:0]           mem_sel,
-  output                  mem_write_is_rsid,
+  output                  mem_write_is_ref,
   output  [`DATA_BUS]     mem_write_data,
   // CP0 info
   output  [`CP0_ADDR_BUS] cp0_addr,
   output                  cp0_read_flag,
   output                  cp0_write_flag,
-  output                  cp0_write_is_rsid,
+  output                  cp0_write_is_ref,
   output  [`DATA_BUS]     cp0_write_data,
   // exception info
   output  [`EXC_TYPE_BUS] exception_type,
   // to ROB stage
   output  [`FUNCT_BUS]    funct,
   output  [`SHAMT_BUS]    shamt,
-  output                  operand_is_rsid_1,
-  output                  operand_is_rsid_2,
+  output                  operand_is_ref_1,
+  output                  operand_is_ref_2,
   output  [`DATA_BUS]     operand_data_1,
   output  [`DATA_BUS]     operand_data_2,
   output  [`ADDR_BUS]     pc_out
@@ -96,8 +96,8 @@ module ID(
     .imm                (inst_imm),
     .is_cp0             (inst_is_cp0),
     .funct              (funct),
-    .reg_read_is_rsid_1 (reg_read_is_rsid_1),
-    .reg_read_is_rsid_2 (reg_read_is_rsid_2),
+    .reg_read_is_ref_1 (reg_read_is_ref_1),
+    .reg_read_is_ref_2 (reg_read_is_ref_2),
     .reg_read_data_1    (reg_read_data_1),
     .reg_read_data_2    (reg_read_data_2),
     .reg_read_en_1      (reg_read_en_1),
@@ -106,8 +106,8 @@ module ID(
     .reg_read_addr_2    (reg_read_addr_2),
     .reg_write_en       (reg_write_en),
     .reg_write_addr     (reg_write_addr),
-    .operand_is_rsid_1  (operand_is_rsid_1),
-    .operand_is_rsid_2  (operand_is_rsid_2),
+    .operand_is_ref_1  (operand_is_ref_1),
+    .operand_is_ref_2  (operand_is_ref_2),
     .operand_data_1     (operand_data_1),
     .operand_data_2     (operand_data_2)
   );
@@ -121,8 +121,8 @@ module ID(
     .imm                (inst_imm),
     .funct              (funct),
     .jump_addr          (inst_jump),
-    .reg_read_is_rsid_1 (reg_read_is_rsid_1),
-    .reg_read_is_rsid_2 (reg_read_is_rsid_2),
+    .reg_read_is_ref_1 (reg_read_is_ref_1),
+    .reg_read_is_ref_2 (reg_read_is_ref_2),
     .reg_read_data_1    (reg_read_data_1),
     .reg_read_data_2    (reg_read_data_2),
     .is_branch          (is_inst_branch),
@@ -136,13 +136,13 @@ module ID(
   MemGen mem_gen(
     .rst                (rst),
     .op                 (inst_op),
-    .reg_read_is_rsid_2 (reg_read_is_rsid_2),
+    .reg_read_is_ref_2 (reg_read_is_ref_2),
     .reg_read_data_2    (reg_read_data_2),
     .mem_write_flag     (mem_write_flag),
     .mem_read_flag      (mem_read_flag),
     .mem_sign_ext_flag  (mem_sign_ext_flag),
     .mem_sel            (mem_sel),
-    .mem_write_is_rsid  (mem_write_is_rsid),
+    .mem_write_is_ref  (mem_write_is_ref),
     .mem_write_data     (mem_write_data)
   );
 
@@ -154,12 +154,12 @@ module ID(
     .rd                 (inst_rd),
     .sel                (inst_sel),
     .is_cp0             (inst_is_cp0),
-    .reg_read_is_rsid_1 (reg_read_is_rsid_1),
+    .reg_read_is_ref_1 (reg_read_is_ref_1),
     .reg_read_data_1    (reg_read_data_1),
     .cp0_addr           (cp0_addr),
     .cp0_read_flag      (cp0_read_flag),
     .cp0_write_flag     (cp0_write_flag),
-    .cp0_write_is_rsid  (cp0_write_is_rsid),
+    .cp0_write_is_ref  (cp0_write_is_ref),
     .cp0_write_data     (cp0_write_data)
   );
 
