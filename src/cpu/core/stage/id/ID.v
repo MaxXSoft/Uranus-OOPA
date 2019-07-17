@@ -3,6 +3,7 @@
 `include "bus.v"
 `include "branch.v"
 `include "segpos.v"
+`include "cp0.v"
 
 module ID(
   input                   rst,
@@ -31,16 +32,30 @@ module ID(
   output                  is_inst_jump,
   output                  is_inst_branch_taken,
   output                  is_inst_branch_determined,
-  output                  is_inst_branch_target_rsid,
   output  [`ADDR_BUS]     inst_branch_target,
+  // memory accessing info
+  output                  mem_write_flag,
+  output                  mem_read_flag,
+  output                  mem_sign_ext_flag,
+  output  [3:0]           mem_sel,
+  output                  mem_write_is_rsid,
+  output  [`DATA_BUS]     mem_write_data,
+  // CP0 info
+  output  [`CP0_ADDR_BUS] cp0_addr,
+  output                  cp0_read_flag,
+  output                  cp0_write_flag,
+  output                  cp0_write_is_rsid,
+  output  [`DATA_BUS]     cp0_write_data,
+  // exception info
+  output  [`EXC_TYPE_BUS] exception_type,
   // to ROB stage
-  output  [`ADDR_BUS]     pc_out,
-  output  [`INST_BUS]     inst_out,
   output  [`FUNCT_BUS]    funct,
+  output  [`SHAMT_BUS]    shamt,
   output                  operand_is_rsid_1,
   output                  operand_is_rsid_2,
   output  [`DATA_BUS]     operand_data_1,
   output  [`DATA_BUS]     operand_data_2,
+  output  [`ADDR_BUS]     pc_out
 );
 
   // extract information from instruction
@@ -52,13 +67,14 @@ module ID(
   wire[`FUNCT_BUS] inst_funct = inst_in[`SEG_FUNCT];
   wire[`HALF_DATA_BUS] inst_imm = inst[`SEG_IMM];
   wire[`JUMP_ADDR_BUS] inst_jump = inst[`SEG_JUMP];
+  wire[`CP0_SEL_BUS] inst_sel = inst[`SEG_SEL];
   wire inst_is_cp0 = !inst[`SEG_EMPTY];
 
   // generate some directly connected signals
   assign is_branch_taken_out = is_branch_taken_in;
   assign pht_index_out = pht_index_in;
+  assign shamt = shamt;
   assign pc_out = pc_in;
-  assign inst_out = inst_in;
 
   // generate funct signal
   FunctGen funct_gen(
@@ -113,10 +129,49 @@ module ID(
     .is_jump            (is_inst_jump),
     .is_taken           (is_inst_branch_taken),
     .is_determined      (is_inst_branch_determined),
-    .is_target_rsid     (is_inst_branch_target_rsid),
     .target             (inst_branch_target)
   );
 
-  // TODO
+  // generate memory accessing information
+  MemGen mem_gen(
+    .rst                (rst),
+    .op                 (inst_op),
+    .reg_read_is_rsid_2 (reg_read_is_rsid_2),
+    .reg_read_data_2    (reg_read_data_2),
+    .mem_write_flag     (mem_write_flag),
+    .mem_read_flag      (mem_read_flag),
+    .mem_sign_ext_flag  (mem_sign_ext_flag),
+    .mem_sel            (mem_sel),
+    .mem_write_is_rsid  (mem_write_is_rsid),
+    .mem_write_data     (mem_write_data)
+  );
+
+  // generate CP0 information
+  CP0Gen cp0_gen(
+    .rst                (rst),
+    .op                 (inst_op),
+    .rs                 (inst_rs),
+    .rd                 (inst_rd),
+    .sel                (inst_sel),
+    .is_cp0             (inst_is_cp0),
+    .reg_read_is_rsid_1 (reg_read_is_rsid_1),
+    .reg_read_data_1    (reg_read_data_1),
+    .cp0_addr           (cp0_addr),
+    .cp0_read_flag      (cp0_read_flag),
+    .cp0_write_flag     (cp0_write_flag),
+    .cp0_write_is_rsid  (cp0_write_is_rsid),
+    .cp0_write_data     (cp0_write_data)
+  );
+
+  // generate exception information
+  ExceptGen except_gen(
+    .rst            (rst),
+    .op             (inst_op),
+    .rs             (inst_rs),
+    .rt             (inst_rt),
+    .funct          (funct),
+    .is_eret        (inst == `CP0_ERET_FULL),
+    .exception_type (exception_type)
+  );
 
 endmodule // ID
