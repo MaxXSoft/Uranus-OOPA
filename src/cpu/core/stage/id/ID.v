@@ -165,13 +165,13 @@ module ID(
 
   // generate exception information
   ExceptGen except_gen(
-    .rst            (rst),
-    .op             (inst_op),
-    .rs             (inst_rs),
-    .rt             (inst_rt),
-    .funct          (funct),
-    .is_eret        (inst == `CP0_ERET_FULL),
-    .exception_type (exception_type)
+    .rst                (rst),
+    .op                 (inst_op),
+    .rs                 (inst_rs),
+    .rt                 (inst_rt),
+    .funct              (funct),
+    .is_eret            (inst == `CP0_ERET_FULL),
+    .exception_type     (exception_type)
   );
 
 endmodule // ID
