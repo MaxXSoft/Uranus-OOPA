@@ -1,6 +1,9 @@
 `timescale 1ns / 1ps
 
 `include "bus.v"
+`include "opcode.v"
+`include "funct.v"
+`include "regimm.v"
 
 /*
  * NOTE:

@@ -2,6 +2,8 @@
 
 `include "bus.v"
 `include "opcode.v"
+`include "regimm.v"
+`include "funct.v"
 `include "cp0.v"
 
 module RegGen(
