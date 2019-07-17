@@ -90,7 +90,7 @@ module BranchGen(
         end
         `OP_BGTZ: begin
           if (!reg_read_is_rsid_1) begin
-            is_taken <= !reg_read_data_1[31] && reg_read_data_1;
+            is_taken <= !reg_read_data_1[31] && |reg_read_data_1;
             is_determined <= 1;
           end
           else begin
@@ -103,7 +103,7 @@ module BranchGen(
         end
         `OP_BLEZ: begin
           if (!reg_read_is_rsid_1) begin
-            is_taken <= reg_read_data_1[31] || !reg_read_data_1;
+            is_taken <= reg_read_data_1[31] || !(|reg_read_data_1);
             is_determined <= 1;
           end
           else begin

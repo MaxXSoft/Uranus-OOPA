@@ -65,15 +65,15 @@ module ID(
   wire[`REG_ADDR_BUS] inst_rd = inst_in[`SEG_RD];
   wire[`SHAMT_BUS] inst_shamt = inst_in[`SEG_SHAMT];
   wire[`FUNCT_BUS] inst_funct = inst_in[`SEG_FUNCT];
-  wire[`HALF_DATA_BUS] inst_imm = inst[`SEG_IMM];
-  wire[`JUMP_ADDR_BUS] inst_jump = inst[`SEG_JUMP];
-  wire[`CP0_SEL_BUS] inst_sel = inst[`SEG_SEL];
-  wire inst_is_cp0 = !inst[`SEG_EMPTY];
+  wire[`HALF_DATA_BUS] inst_imm = inst_in[`SEG_IMM];
+  wire[`JUMP_ADDR_BUS] inst_jump = inst_in[`SEG_JUMP];
+  wire[`CP0_SEL_BUS] inst_sel = inst_in[`SEG_SEL];
+  wire inst_is_cp0 = !(|inst_in[`SEG_EMPTY]);
 
   // generate some directly connected signals
   assign is_branch_taken_out = is_branch_taken_in;
   assign pht_index_out = pht_index_in;
-  assign shamt = shamt;
+  assign shamt = inst_shamt;
   assign pc_out = pc_in;
 
   // generate funct signal
@@ -170,7 +170,7 @@ module ID(
     .rs                 (inst_rs),
     .rt                 (inst_rt),
     .funct              (funct),
-    .is_eret            (inst == `CP0_ERET_FULL),
+    .is_eret            (inst_in == `CP0_ERET_FULL),
     .exception_type     (exception_type)
   );
 

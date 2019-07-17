@@ -3,6 +3,7 @@
 `include "bus.v"
 `include "opcode.v"
 `include "funct.v"
+`include "regimm.v"
 
 module FunctGen(
   input                   rst,
