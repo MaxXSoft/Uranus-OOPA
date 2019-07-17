@@ -43,4 +43,8 @@
 `define CP0_SEL_WIDTH           3
 `define CP0_SEL_BUS             `MAKE_BUS(`CP0_SEL_WIDTH)
 
+// exception type bus
+`define EXC_TYPE_BUS_WIDTH      8
+`define EXC_TYPE_BUS            `MAKE_BUS(`EXC_TYPE_BUS_WIDTH)
+
 `endif  // OOPA_CPU_INCLUDE_BUS_V_
