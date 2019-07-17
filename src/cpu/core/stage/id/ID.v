@@ -16,16 +16,26 @@ module ID(
   input                   reg_read_is_rsid_2,
   input   [`DATA_BUS]     reg_read_data_1,
   input   [`DATA_BUS]     reg_read_data_2,
-  output                  reg_read_en_1_out,
-  output                  reg_read_en_2_out,
-  output  [`REG_ADDR_BUS] reg_read_addr_1_out,
-  output  [`REG_ADDR_BUS] reg_read_addr_2_out,
+  output                  reg_read_en_1,
+  output                  reg_read_en_2,
+  output  [`REG_ADDR_BUS] reg_read_addr_1,
+  output  [`REG_ADDR_BUS] reg_read_addr_2,
   // regfile writer
   output                  reg_write_en,
   output  [`REG_ADDR_BUS] reg_write_addr,
-  // to PC stage
-  //
+  // branch info (from predictor)
+  output                  is_branch_taken_out,
+  output  [`GHR_BUS]      pht_index_out,
+  // branch info (from decoder)
+  output                  is_inst_branch,
+  output                  is_inst_jump,
+  output                  is_inst_branch_taken,
+  output                  is_inst_branch_determined,
+  output                  is_inst_branch_target_rsid,
+  output  [`ADDR_BUS]     inst_branch_target,
   // to ROB stage
+  output  [`ADDR_BUS]     pc_out,
+  output  [`INST_BUS]     inst_out,
   output  [`FUNCT_BUS]    funct,
   output                  operand_is_rsid_1,
   output                  operand_is_rsid_2,
@@ -43,6 +53,12 @@ module ID(
   wire[`HALF_DATA_BUS] inst_imm = inst[`SEG_IMM];
   wire[`JUMP_ADDR_BUS] inst_jump = inst[`SEG_JUMP];
   wire inst_is_cp0 = !inst[`SEG_EMPTY];
+
+  // generate some directly connected signals
+  assign is_branch_taken_out = is_branch_taken_in;
+  assign pht_index_out = pht_index_in;
+  assign pc_out = pc_in;
+  assign inst_out = inst_in;
 
   // generate funct signal
   FunctGen funct_gen(
@@ -68,16 +84,37 @@ module ID(
     .reg_read_is_rsid_2 (reg_read_is_rsid_2),
     .reg_read_data_1    (reg_read_data_1),
     .reg_read_data_2    (reg_read_data_2),
-    .reg_read_en_1      (reg_read_en_1_out),
-    .reg_read_en_2      (reg_read_en_2_out),
-    .reg_read_addr_1    (reg_read_addr_1_out),
-    .reg_read_addr_2    (reg_read_addr_2_out),
+    .reg_read_en_1      (reg_read_en_1),
+    .reg_read_en_2      (reg_read_en_2),
+    .reg_read_addr_1    (reg_read_addr_1),
+    .reg_read_addr_2    (reg_read_addr_2),
     .reg_write_en       (reg_write_en),
     .reg_write_addr     (reg_write_addr),
     .operand_is_rsid_1  (operand_is_rsid_1),
     .operand_is_rsid_2  (operand_is_rsid_2),
     .operand_data_1     (operand_data_1),
     .operand_data_2     (operand_data_2)
+  );
+
+  // generate branch information
+  BranchGen branch_gen(
+    .rst                (rst),
+    .pc                 (pc_in),
+    .op                 (inst_op),
+    .rt                 (inst_rt),
+    .imm                (inst_imm),
+    .funct              (funct),
+    .jump_addr          (inst_jump),
+    .reg_read_is_rsid_1 (reg_read_is_rsid_1),
+    .reg_read_is_rsid_2 (reg_read_is_rsid_2),
+    .reg_read_data_1    (reg_read_data_1),
+    .reg_read_data_2    (reg_read_data_2),
+    .is_branch          (is_inst_branch),
+    .is_jump            (is_inst_jump),
+    .is_taken           (is_inst_branch_taken),
+    .is_determined      (is_inst_branch_determined),
+    .is_target_rsid     (is_inst_branch_target_rsid),
+    .target             (inst_branch_target)
   );
 
   // TODO
