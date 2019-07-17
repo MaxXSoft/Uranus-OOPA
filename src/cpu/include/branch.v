@@ -6,7 +6,7 @@
 
 // some definitions about branch prediction
 `define GHR_WIDTH         5
-`define GHR_BUS           (`GHR_WIDTH) - 1:0
+`define GHR_BUS           `MAKE_BUS(`GHR_WIDTH)
 `define PHT_SIZE          `MAKE_SIZE(`GHR_WIDTH)
 
 `define BTB_INDEX_WIDTH   6
