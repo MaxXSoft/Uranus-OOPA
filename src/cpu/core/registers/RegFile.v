@@ -68,8 +68,14 @@ module RegFile(
     else if (read_en_1) begin
       if (write_en && read_addr_1 == write_addr) begin
         // data forwarding
-        read_is_ref_1 <= write_is_ref;
-        read_data_1 <= write_data;
+        if (write_restore) begin
+          read_is_ref_1 <= 0;
+          read_data_1 <= reg_val[read_addr_1];
+        end
+        else begin
+          read_is_ref_1 <= write_is_ref;
+          read_data_1 <= write_data;
+        end
       end
       else begin
         read_is_ref_1 <= is_ref[read_addr_1];
@@ -102,8 +108,14 @@ module RegFile(
     else if (read_en_2) begin
       if (write_en && read_addr_2 == write_addr) begin
         // data forwarding
-        read_is_ref_2 <= write_is_ref;
-        read_data_2 <= write_data;
+        if (write_restore) begin
+          read_is_ref_2 <= 0;
+          read_data_2 <= reg_val[read_addr_2];
+        end
+        else begin
+          read_is_ref_2 <= write_is_ref;
+          read_data_2 <= write_data;
+        end
       end
       else begin
         read_is_ref_2 <= is_ref[read_addr_2];
