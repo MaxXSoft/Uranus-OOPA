@@ -19,6 +19,7 @@ module ROBLine(
   input                   is_inst_branch_taken_in,
   input                   is_inst_branch_determined_in,
   input   [`ADDR_BUS]     inst_branch_target_in,
+  input                   is_delayslot_in,
   input                   mem_write_flag_in,
   input                   mem_read_flag_in,
   input                   mem_sign_ext_flag_in,
@@ -50,6 +51,7 @@ module ROBLine(
   output                  is_inst_branch_taken_out,
   output                  is_inst_branch_determined_out,
   output  [`ADDR_BUS]     inst_branch_target_out,
+  output                  is_delayslot_out,
   output                  mem_write_flag_out,
   output                  mem_read_flag_out,
   output                  mem_sign_ext_flag_out,
@@ -82,6 +84,7 @@ module ROBLine(
   reg                     is_inst_branch_taken_out;
   reg                     is_inst_branch_determined_out;
   reg[`ADDR_BUS]          inst_branch_target_out;
+  reg                     is_delayslot_out;
   reg                     mem_write_flag_out;
   reg                     mem_read_flag_out;
   reg                     mem_sign_ext_flag_out;
@@ -116,6 +119,7 @@ module ROBLine(
       is_inst_branch_taken_out <= 0;
       is_inst_branch_determined_out <= 0;
       inst_branch_target_out <= 0;
+      is_delayslot_out <= 0;
       mem_write_flag_out <= 0;
       mem_read_flag_out <= 0;
       mem_sign_ext_flag_out <= 0;
@@ -148,6 +152,7 @@ module ROBLine(
       is_inst_branch_taken_out <= is_inst_branch_taken_in;
       is_inst_branch_determined_out <= is_inst_branch_determined_in;
       inst_branch_target_out <= inst_branch_target_in;
+      is_delayslot_out <= is_delayslot_in;
       mem_write_flag_out <= mem_write_flag_in;
       mem_read_flag_out <= mem_read_flag_in;
       mem_sign_ext_flag_out <= mem_sign_ext_flag_in;
