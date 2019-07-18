@@ -12,6 +12,8 @@ module ID(
   input   [`GHR_BUS]      pht_index_in,
   input   [`ADDR_BUS]     pc_in,
   input   [`INST_BUS]     inst_in,
+  // from IDROB mid-stage
+  input                   is_current_delayslot,
   // regfile reader
   input                   reg_read_is_ref_1,
   input                   reg_read_is_ref_2,
@@ -33,6 +35,8 @@ module ID(
   output                  is_inst_branch_taken,
   output                  is_inst_branch_determined,
   output  [`ADDR_BUS]     inst_branch_target,
+  output                  is_next_delayslot,
+  output                  is_delayslot,
   // memory accessing info
   output                  mem_write_flag,
   output                  mem_read_flag,
@@ -73,6 +77,8 @@ module ID(
   // generate some directly connected signals
   assign is_branch_taken_out = is_branch_taken_in;
   assign pht_index_out = pht_index_in;
+  assign is_next_delayslot = is_inst_branch;
+  assign is_delayslot = is_current_delayslot;
   assign shamt = inst_shamt;
   assign pc_out = pc_in;
 
@@ -96,8 +102,8 @@ module ID(
     .imm                (inst_imm),
     .is_cp0             (inst_is_cp0),
     .funct              (funct),
-    .reg_read_is_ref_1 (reg_read_is_ref_1),
-    .reg_read_is_ref_2 (reg_read_is_ref_2),
+    .reg_read_is_ref_1  (reg_read_is_ref_1),
+    .reg_read_is_ref_2  (reg_read_is_ref_2),
     .reg_read_data_1    (reg_read_data_1),
     .reg_read_data_2    (reg_read_data_2),
     .reg_read_en_1      (reg_read_en_1),
@@ -106,8 +112,8 @@ module ID(
     .reg_read_addr_2    (reg_read_addr_2),
     .reg_write_en       (reg_write_en),
     .reg_write_addr     (reg_write_addr),
-    .operand_is_ref_1  (operand_is_ref_1),
-    .operand_is_ref_2  (operand_is_ref_2),
+    .operand_is_ref_1   (operand_is_ref_1),
+    .operand_is_ref_2   (operand_is_ref_2),
     .operand_data_1     (operand_data_1),
     .operand_data_2     (operand_data_2)
   );
@@ -121,8 +127,8 @@ module ID(
     .imm                (inst_imm),
     .funct              (funct),
     .jump_addr          (inst_jump),
-    .reg_read_is_ref_1 (reg_read_is_ref_1),
-    .reg_read_is_ref_2 (reg_read_is_ref_2),
+    .reg_read_is_ref_1  (reg_read_is_ref_1),
+    .reg_read_is_ref_2  (reg_read_is_ref_2),
     .reg_read_data_1    (reg_read_data_1),
     .reg_read_data_2    (reg_read_data_2),
     .is_branch          (is_inst_branch),
@@ -136,13 +142,13 @@ module ID(
   MemGen mem_gen(
     .rst                (rst),
     .op                 (inst_op),
-    .reg_read_is_ref_2 (reg_read_is_ref_2),
+    .reg_read_is_ref_2  (reg_read_is_ref_2),
     .reg_read_data_2    (reg_read_data_2),
     .mem_write_flag     (mem_write_flag),
     .mem_read_flag      (mem_read_flag),
     .mem_sign_ext_flag  (mem_sign_ext_flag),
     .mem_sel            (mem_sel),
-    .mem_write_is_ref  (mem_write_is_ref),
+    .mem_write_is_ref   (mem_write_is_ref),
     .mem_write_data     (mem_write_data)
   );
 
@@ -154,12 +160,12 @@ module ID(
     .rd                 (inst_rd),
     .sel                (inst_sel),
     .is_cp0             (inst_is_cp0),
-    .reg_read_is_ref_1 (reg_read_is_ref_1),
+    .reg_read_is_ref_1  (reg_read_is_ref_1),
     .reg_read_data_1    (reg_read_data_1),
     .cp0_addr           (cp0_addr),
     .cp0_read_flag      (cp0_read_flag),
     .cp0_write_flag     (cp0_write_flag),
-    .cp0_write_is_ref  (cp0_write_is_ref),
+    .cp0_write_is_ref   (cp0_write_is_ref),
     .cp0_write_data     (cp0_write_data)
   );
 

@@ -18,6 +18,8 @@ module IDROB(
   input                   is_inst_branch_taken_in,
   input                   is_inst_branch_determined_in,
   input   [`ADDR_BUS]     inst_branch_target_in,
+  input                   is_next_delayslot_in,
+  input                   is_delayslot_in,
   input                   mem_write_flag_in,
   input                   mem_read_flag_in,
   input                   mem_sign_ext_flag_in,
@@ -46,6 +48,8 @@ module IDROB(
   output                  is_inst_branch_taken_out,
   output                  is_inst_branch_determined_out,
   output  [`ADDR_BUS]     inst_branch_target_out,
+  output                  is_current_delayslot_out,
+  output                  is_delayslot_out,
   output                  mem_write_flag_out,
   output                  mem_read_flag_out,
   output                  mem_sign_ext_flag_out,
@@ -119,6 +123,18 @@ module IDROB(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     inst_branch_target_in, inst_branch_target_out
+  );
+
+  PipelineDeliver #(1) ff_is_current_delayslot(
+    clk, rst, flush,
+    stall_current_stage, stall_next_stage,
+    is_next_delayslot_in, is_current_delayslot_out
+  );
+
+  PipelineDeliver #(1) ff_is_delayslot(
+    clk, rst, flush,
+    stall_current_stage, stall_next_stage,
+    is_delayslot_in, is_delayslot_out
   );
 
   PipelineDeliver #(1) ff_mem_write_flag(
