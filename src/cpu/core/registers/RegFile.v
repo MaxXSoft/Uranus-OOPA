@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "bus.v"
+`include "rob.v"
 
 module RegFile(
   input                   clk,
@@ -8,6 +9,7 @@ module RegFile(
   // write channel
   input                   write_en,
   input   [`REG_ADDR_BUS] write_addr,
+  input                   write_restore,
   input                   write_is_ref,
   input   [`DATA_BUS]     write_data,
   // read channel (x2)
@@ -23,8 +25,10 @@ module RegFile(
 
   // indicate whether current register stores RS/ROB id
   reg is_ref[31:0];
-  // store register value or RS/ROB id
-  reg[`DATA_BUS] reg_ref[31:0];
+  // stores register value
+  reg[`DATA_BUS] reg_val[31:0];
+  // stores RS/ROB id
+  reg[`ROB_BUS] ref_id[31:0];
 
   // write channel
   always @(posedge clk) begin
@@ -32,12 +36,23 @@ module RegFile(
       integer i;
       for (i = 0; i < 32; i = i + 1) begin
         is_ref[i] <= 0;
-        reg_ref[i] <= 0;
+        reg_val[i] <= 0;
+        ref_id[i] <= 0;
       end
     end
-    else if (write_en && write_addr) begin
-      is_ref[write_data] <= write_is_ref;
-      reg_ref[write_data] <= write_data;
+    else if (write_en && |write_addr) begin
+      if (write_restore) begin
+        is_ref[write_addr] <= 0;
+      end
+      else begin
+        is_ref[write_addr] <= write_is_ref;
+        if (write_is_ref) begin
+          ref_id[write_addr] <= write_data[`ROB_BUS];
+        end
+        else begin
+          reg_val[write_addr] <= write_data;
+        end
+      end
     end
   end
 
@@ -58,7 +73,15 @@ module RegFile(
       end
       else begin
         read_is_ref_1 <= is_ref[read_addr_1];
-        read_data_1 <= reg_ref[read_addr_1];
+        if (is_ref[read_addr_1]) begin
+          read_data_1 <= {
+            {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
+            ref_id[read_addr_1]
+          };
+        end
+        else begin
+          read_data_1 <= reg_val[read_addr_1];
+        end
       end
     end
     else begin
@@ -84,7 +107,15 @@ module RegFile(
       end
       else begin
         read_is_ref_2 <= is_ref[read_addr_2];
-        read_data_2 <= reg_ref[read_addr_2];
+        if (is_ref[read_addr_2]) begin
+          read_data_2 <= {
+            {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
+            ref_id[read_addr_2]
+          };
+        end
+        else begin
+          read_data_2 <= reg_val[read_addr_2];
+        end
       end
     end
     else begin
