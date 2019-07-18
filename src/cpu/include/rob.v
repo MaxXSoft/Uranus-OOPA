@@ -24,12 +24,9 @@
 // ---------   end config   ---------
 
 
-// reservation station id
-`define RSID_WIDTH            6
-`define RSID_BUS              `MAKE_BUS(`RSID_WIDTH)
-
 // reorder buffer config
 `define ROB_ADDR_WIDTH        6
 `define ROB_SIZE              `MAKE_SIZE(`ROB_ADDR_WIDTH)
+`define ROB_BUS               `MAKE_BUS(`ROB_ADDR_WIDTH)
 
 `endif  // OOPA_CPU_INCLUDE_ROB_V_
