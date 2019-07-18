@@ -28,7 +28,7 @@ module RegFile(
   // stores register value
   reg[`DATA_BUS] reg_val[31:0];
   // stores RS/ROB id
-  reg[`ROB_BUS] ref_id[31:0];
+  reg[`ROB_ADDR_BUS] ref_id[31:0];
 
   // write channel
   always @(posedge clk) begin
@@ -47,7 +47,7 @@ module RegFile(
       else begin
         is_ref[write_addr] <= write_is_ref;
         if (write_is_ref) begin
-          ref_id[write_addr] <= write_data[`ROB_BUS];
+          ref_id[write_addr] <= write_data[`ROB_ADDR_BUS];
         end
         else begin
           reg_val[write_addr] <= write_data;
