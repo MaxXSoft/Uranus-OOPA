@@ -11,7 +11,7 @@
 
 // div unit
 `define RS_DIV_ADDR_WIDTH     4
-`define RS_DIV_SIZE           `MAKE_SIZE(`RS_MULDIV_ADDR_WIDTH)
+`define RS_DIV_SIZE           `MAKE_SIZE(`RS_DIV_ADDR_WIDTH)
 
 // floating point unit
 `define RS_FPU_ADDR_WIDTH     4
