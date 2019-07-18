@@ -8,7 +8,6 @@ module ROBLine(
   input                   rst,
   input                   write_en,
   // input signals
-  input                   valid_in,
   input                   done_in,
   input                   reg_write_en_in,
   input   [`REG_ADDR_BUS] reg_write_addr_in,
@@ -40,7 +39,6 @@ module ROBLine(
   input   [`DATA_BUS]     operand_data_2_in,
   input   [`ADDR_BUS]     pc_in,
   // output signals
-  output                  valid_out,
   output                  done_out,
   output                  reg_write_en_out,
   output  [`REG_ADDR_BUS] reg_write_addr_out,
@@ -74,7 +72,7 @@ module ROBLine(
 );
 
   // storage
-  reg                     valid_out, done_out;
+  reg                     done_out;
   reg                     reg_write_en_out;
   reg[`REG_ADDR_BUS]      reg_write_addr_out;
   reg                     is_branch_taken_out;
@@ -108,7 +106,6 @@ module ROBLine(
   // write to storage
   always @(posedge clk) begin
     if (!rst) begin
-      valid_out <= 0;
       done_out <= 0;
       reg_write_en_out <= 0;
       reg_write_addr_out <= 0;
@@ -141,7 +138,6 @@ module ROBLine(
       pc_out <= 0;
     end
     else if (write_en) begin
-      valid_out <= valid_in;
       done_out <= done_in;
       reg_write_en_out <= reg_write_en_in;
       reg_write_addr_out <= reg_write_addr_in;
