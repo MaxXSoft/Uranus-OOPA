@@ -7,18 +7,22 @@
 module ReorderBuffer(
   input                   clk,
   input                   rst,
-  // control signals
+  // read control
   input                   read_en,
   input                   read_head_en,
+  output                  can_read,
+  // write control
   input                   write_en,
+  output                  can_write,
+  // update control
   input                   update_en,
   input   [`ROB_ADDR_BUS] update_addr,
+  // commit control
   input                   commit_en,
   output                  can_commit,
+  // erase control
   input                   erase_en,
   input   [`ROB_ADDR_BUS] erase_from_addr,
-  output                  is_full,
-  output                  is_empty,
   // input signals
   input                   done_in,
   input                   reg_write_en_in,
@@ -220,13 +224,27 @@ module ReorderBuffer(
     end
   endgenerate
 
-  // ROB line selector
-  reg rob_write_en;
-
-  // TODO
-
   // pointers of FIFO
   reg[`ROB_SIZE:0] head_ptr, read_ptr, tail_ptr;
+
+  // FIFO indicator
+  wire foe_head = head_ptr[`ROB_ADDR_WIDTH - 1:0] == tail_ptr[`ROB_ADDR_WIDTH - 1:0];
+  wire foe_read = read_ptr[`ROB_ADDR_WIDTH - 1:0] == tail_ptr[`ROB_ADDR_WIDTH - 1:0];
+  assign can_read = !(foe_read && read_ptr == tail_ptr);
+  assign can_write = !(foe_head && head_ptr != tail_ptr);
+  assign can_commit = !(foe_head && head_ptr == tail_ptr) &&
+                      robl_done[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+
+  // ROB line selector
+  // policy: write (rather than update) first
+  generate
+    for (i = 0; i < `ROB_SIZE; i = i + 1) begin
+      assign line_write_en[i] =
+          write_en ? (erase_en ? erase_from_addr == i :
+                                 tail_ptr[`ROB_ADDR_WIDTH - 1:0] == i) :
+          update_en ? update_addr == i : 0;
+    end
+  endgenerate
 
   // read from ROB
   always @(*) begin
@@ -263,68 +281,68 @@ module ReorderBuffer(
       pc_out <= 0;
     end
     else if (read_en) begin
-      done_out <= robl_done[read_ptr];
-      reg_write_en_out <= robl_reg_write_en[read_ptr];
-      reg_write_addr_out <= robl_reg_write_addr[read_ptr];
-      is_branch_taken_out <= robl_is_branch_taken[read_ptr];
-      pht_index_out <= robl_pht_index[read_ptr];
-      is_inst_branch_out <= robl_is_inst_branch[read_ptr];
-      is_inst_jump_out <= robl_is_inst_jump[read_ptr];
-      is_inst_branch_taken_out <= robl_is_inst_branch_taken[read_ptr];
-      is_inst_branch_determined_out <= robl_is_inst_branch_determined[read_ptr];
-      inst_branch_target_out <= robl_inst_branch_target[read_ptr];
-      is_delayslot_out <= robl_is_delayslot[read_ptr];
-      mem_write_flag_out <= robl_mem_write_flag[read_ptr];
-      mem_read_flag_out <= robl_mem_read_flag[read_ptr];
-      mem_sign_ext_flag_out <= robl_mem_sign_ext_flag[read_ptr];
-      mem_sel_out <= robl_mem_sel[read_ptr];
-      mem_write_is_ref_out <= robl_mem_write_is_ref[read_ptr];
-      mem_write_data_out <= robl_mem_write_data[read_ptr];
-      cp0_addr_out <= robl_cp0_addr[read_ptr];
-      cp0_read_flag_out <= robl_cp0_read_flag[read_ptr];
-      cp0_write_flag_out <= robl_cp0_write_flag[read_ptr];
-      cp0_write_is_ref_out <= robl_cp0_write_is_ref[read_ptr];
-      cp0_write_data_out <= robl_cp0_write_data[read_ptr];
-      exception_type_out <= robl_exception_type[read_ptr];
-      funct_out <= robl_funct[read_ptr];
-      shamt_out <= robl_shamt[read_ptr];
-      operand_is_ref_1_out <= robl_operand_is_ref_1[read_ptr];
-      operand_is_ref_2_out <= robl_operand_is_ref_2[read_ptr];
-      operand_data_1_out <= robl_operand_data_1[read_ptr];
-      operand_data_2_out <= robl_operand_data_2[read_ptr];
-      pc_out <= robl_pc[read_ptr];
+      done_out <= robl_done[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      reg_write_en_out <= robl_reg_write_en[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      reg_write_addr_out <= robl_reg_write_addr[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_branch_taken_out <= robl_is_branch_taken[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      pht_index_out <= robl_pht_index[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_inst_branch_out <= robl_is_inst_branch[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_inst_jump_out <= robl_is_inst_jump[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_inst_branch_taken_out <= robl_is_inst_branch_taken[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_inst_branch_determined_out <= robl_is_inst_branch_determined[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      inst_branch_target_out <= robl_inst_branch_target[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_delayslot_out <= robl_is_delayslot[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_write_flag_out <= robl_mem_write_flag[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_read_flag_out <= robl_mem_read_flag[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_sign_ext_flag_out <= robl_mem_sign_ext_flag[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_sel_out <= robl_mem_sel[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_write_is_ref_out <= robl_mem_write_is_ref[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_write_data_out <= robl_mem_write_data[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_addr_out <= robl_cp0_addr[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_read_flag_out <= robl_cp0_read_flag[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_write_flag_out <= robl_cp0_write_flag[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_write_is_ref_out <= robl_cp0_write_is_ref[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_write_data_out <= robl_cp0_write_data[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      exception_type_out <= robl_exception_type[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      funct_out <= robl_funct[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      shamt_out <= robl_shamt[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      operand_is_ref_1_out <= robl_operand_is_ref_1[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      operand_is_ref_2_out <= robl_operand_is_ref_2[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      operand_data_1_out <= robl_operand_data_1[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      operand_data_2_out <= robl_operand_data_2[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      pc_out <= robl_pc[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
     end
     else if (read_head_en) begin
-      done_out <= robl_done[head_ptr];
-      reg_write_en_out <= robl_reg_write_en[head_ptr];
-      reg_write_addr_out <= robl_reg_write_addr[head_ptr];
-      is_branch_taken_out <= robl_is_branch_taken[head_ptr];
-      pht_index_out <= robl_pht_index[head_ptr];
-      is_inst_branch_out <= robl_is_inst_branch[head_ptr];
-      is_inst_jump_out <= robl_is_inst_jump[head_ptr];
-      is_inst_branch_taken_out <= robl_is_inst_branch_taken[head_ptr];
-      is_inst_branch_determined_out <= robl_is_inst_branch_determined[head_ptr];
-      inst_branch_target_out <= robl_inst_branch_target[head_ptr];
-      is_delayslot_out <= robl_is_delayslot[head_ptr];
-      mem_write_flag_out <= robl_mem_write_flag[head_ptr];
-      mem_read_flag_out <= robl_mem_read_flag[head_ptr];
-      mem_sign_ext_flag_out <= robl_mem_sign_ext_flag[head_ptr];
-      mem_sel_out <= robl_mem_sel[head_ptr];
-      mem_write_is_ref_out <= robl_mem_write_is_ref[head_ptr];
-      mem_write_data_out <= robl_mem_write_data[head_ptr];
-      cp0_addr_out <= robl_cp0_addr[head_ptr];
-      cp0_read_flag_out <= robl_cp0_read_flag[head_ptr];
-      cp0_write_flag_out <= robl_cp0_write_flag[head_ptr];
-      cp0_write_is_ref_out <= robl_cp0_write_is_ref[head_ptr];
-      cp0_write_data_out <= robl_cp0_write_data[head_ptr];
-      exception_type_out <= robl_exception_type[head_ptr];
-      funct_out <= robl_funct[head_ptr];
-      shamt_out <= robl_shamt[head_ptr];
-      operand_is_ref_1_out <= robl_operand_is_ref_1[head_ptr];
-      operand_is_ref_2_out <= robl_operand_is_ref_2[head_ptr];
-      operand_data_1_out <= robl_operand_data_1[head_ptr];
-      operand_data_2_out <= robl_operand_data_2[head_ptr];
-      pc_out <= robl_pc[head_ptr];
+      done_out <= robl_done[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      reg_write_en_out <= robl_reg_write_en[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      reg_write_addr_out <= robl_reg_write_addr[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_branch_taken_out <= robl_is_branch_taken[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      pht_index_out <= robl_pht_index[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_inst_branch_out <= robl_is_inst_branch[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_inst_jump_out <= robl_is_inst_jump[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_inst_branch_taken_out <= robl_is_inst_branch_taken[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_inst_branch_determined_out <= robl_is_inst_branch_determined[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      inst_branch_target_out <= robl_inst_branch_target[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      is_delayslot_out <= robl_is_delayslot[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_write_flag_out <= robl_mem_write_flag[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_read_flag_out <= robl_mem_read_flag[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_sign_ext_flag_out <= robl_mem_sign_ext_flag[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_sel_out <= robl_mem_sel[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_write_is_ref_out <= robl_mem_write_is_ref[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      mem_write_data_out <= robl_mem_write_data[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_addr_out <= robl_cp0_addr[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_read_flag_out <= robl_cp0_read_flag[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_write_flag_out <= robl_cp0_write_flag[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_write_is_ref_out <= robl_cp0_write_is_ref[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      cp0_write_data_out <= robl_cp0_write_data[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      exception_type_out <= robl_exception_type[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      funct_out <= robl_funct[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      shamt_out <= robl_shamt[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      operand_is_ref_1_out <= robl_operand_is_ref_1[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      operand_is_ref_2_out <= robl_operand_is_ref_2[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      operand_data_1_out <= robl_operand_data_1[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      operand_data_2_out <= robl_operand_data_2[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      pc_out <= robl_pc[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
     end
     else begin
       done_out <= 0;
@@ -360,6 +378,38 @@ module ReorderBuffer(
     end
   end
 
-  // TODO
+  // update head pointer
+  always @(posedge clk) begin
+    if (!rst) begin
+      head_ptr <= 0;
+    end
+    else if (commit_en) begin
+      head_ptr <= head_ptr + 1;
+    end
+  end
+
+  // update read pointer
+  always @(posedge clk) begin
+    if (!rst) begin
+      read_ptr <= 0;
+    end
+    else if (read_en) begin
+      read_ptr <= read_ptr + 1;
+    end
+  end
+
+  // update tail pointer
+  always @(posedge clk) begin
+    if (!rst) begin
+      tail_ptr <= 0;
+    end
+    else if (erase_en) begin
+      tail_ptr <= write_en ? {1'b0, erase_from_addr} + 1 :
+                             {1'b0, erase_from_addr};
+    end
+    else if (write_en) begin
+      tail_ptr <= tail_ptr + 1;
+    end
+  end
 
 endmodule // ReorderBuffer
