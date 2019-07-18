@@ -16,6 +16,8 @@ module ID_tb(
   reg[`INST_BUS]      inst;
 
   // output signals of ID
+  wire                id_is_next_delayslot;
+  wire                id_is_delayslot;
   wire                id_reg_read_en_1;
   wire                id_reg_read_en_2;
   wire[`REG_ADDR_BUS] id_reg_read_addr_1;
@@ -59,6 +61,8 @@ module ID_tb(
   wire                idrob_is_inst_branch_taken;
   wire                idrob_is_inst_branch_determined;
   wire[`ADDR_BUS]     idrob_inst_branch_target;
+  wire                idrob_is_current_delayslot;
+  wire                idrob_is_delayslot;
   wire                idrob_mem_write_flag;
   wire                idrob_mem_read_flag;
   wire                idrob_mem_sign_ext_flag;
@@ -87,8 +91,10 @@ module ID_tb(
     .pc_in                      (pc),
     .inst_in                    (inst),
 
-    .reg_read_is_ref_1         (0),
-    .reg_read_is_ref_2         (0),
+    .is_current_delayslot       (idrob_is_current_delayslot),
+
+    .reg_read_is_ref_1          (0),
+    .reg_read_is_ref_2          (0),
     .reg_read_data_1            (32'h12345678),
     .reg_read_data_2            (32'habcdef00),
     .reg_read_en_1              (id_reg_read_en_1),
@@ -106,26 +112,28 @@ module ID_tb(
     .is_inst_branch_taken       (id_is_inst_branch_taken),
     .is_inst_branch_determined  (id_is_inst_branch_determined),
     .inst_branch_target         (id_inst_branch_target),
+    .is_next_delayslot          (id_is_next_delayslot),
+    .is_delayslot               (id_is_delayslot),
 
     .mem_write_flag             (id_mem_write_flag),
     .mem_read_flag              (id_mem_read_flag),
     .mem_sign_ext_flag          (id_mem_sign_ext_flag),
     .mem_sel                    (id_mem_sel),
-    .mem_write_is_ref          (id_mem_write_is_ref),
+    .mem_write_is_ref           (id_mem_write_is_ref),
     .mem_write_data             (id_mem_write_data),
 
     .cp0_addr                   (id_cp0_addr),
     .cp0_read_flag              (id_cp0_read_flag),
     .cp0_write_flag             (id_cp0_write_flag),
-    .cp0_write_is_ref          (id_cp0_write_is_ref),
+    .cp0_write_is_ref           (id_cp0_write_is_ref),
     .cp0_write_data             (id_cp0_write_data),
 
     .exception_type             (id_exception_type),
 
     .funct                      (id_funct),
     .shamt                      (id_shamt),
-    .operand_is_ref_1          (id_operand_is_ref_1),
-    .operand_is_ref_2          (id_operand_is_ref_2),
+    .operand_is_ref_1           (id_operand_is_ref_1),
+    .operand_is_ref_2           (id_operand_is_ref_2),
     .operand_data_1             (id_operand_data_1),
     .operand_data_2             (id_operand_data_2),
     .pc_out                     (id_pc)
@@ -147,22 +155,24 @@ module ID_tb(
     .is_inst_branch_taken_in        (id_is_inst_branch_taken),
     .is_inst_branch_determined_in   (id_is_inst_branch_determined),
     .inst_branch_target_in          (id_inst_branch_target),
+    .is_next_delayslot_in           (id_is_next_delayslot),
+    .is_delayslot_in                (id_is_delayslot),
     .mem_write_flag_in              (id_mem_write_flag),
     .mem_read_flag_in               (id_mem_read_flag),
     .mem_sign_ext_flag_in           (id_mem_sign_ext_flag),
     .mem_sel_in                     (id_mem_sel),
-    .mem_write_is_ref_in           (id_mem_write_is_ref),
+    .mem_write_is_ref_in            (id_mem_write_is_ref),
     .mem_write_data_in              (id_mem_write_data),
     .cp0_addr_in                    (id_cp0_addr),
     .cp0_read_flag_in               (id_cp0_read_flag),
     .cp0_write_flag_in              (id_cp0_write_flag),
-    .cp0_write_is_ref_in           (id_cp0_write_is_ref),
+    .cp0_write_is_ref_in            (id_cp0_write_is_ref),
     .cp0_write_data_in              (id_cp0_write_data),
     .exception_type_in              (id_exception_type),
     .funct_in                       (id_funct),
     .shamt_in                       (id_shamt),
-    .operand_is_ref_1_in           (id_operand_is_ref_1),
-    .operand_is_ref_2_in           (id_operand_is_ref_2),
+    .operand_is_ref_1_in            (id_operand_is_ref_1),
+    .operand_is_ref_2_in            (id_operand_is_ref_2),
     .operand_data_1_in              (id_operand_data_1),
     .operand_data_2_in              (id_operand_data_2),
     .pc_in                          (id_pc),
@@ -176,22 +186,24 @@ module ID_tb(
     .is_inst_branch_taken_out       (idrob_is_inst_branch_taken),
     .is_inst_branch_determined_out  (idrob_is_inst_branch_determined),
     .inst_branch_target_out         (idrob_inst_branch_target),
+    .is_current_delayslot_out       (idrob_is_current_delayslot),
+    .is_delayslot_out               (idrob_is_delayslot),
     .mem_write_flag_out             (idrob_mem_write_flag),
     .mem_read_flag_out              (idrob_mem_read_flag),
     .mem_sign_ext_flag_out          (idrob_mem_sign_ext_flag),
     .mem_sel_out                    (idrob_mem_sel),
-    .mem_write_is_ref_out          (idrob_mem_write_is_ref),
+    .mem_write_is_ref_out           (idrob_mem_write_is_ref),
     .mem_write_data_out             (idrob_mem_write_data),
     .cp0_addr_out                   (idrob_cp0_addr),
     .cp0_read_flag_out              (idrob_cp0_read_flag),
     .cp0_write_flag_out             (idrob_cp0_write_flag),
-    .cp0_write_is_ref_out          (idrob_cp0_write_is_ref),
+    .cp0_write_is_ref_out           (idrob_cp0_write_is_ref),
     .cp0_write_data_out             (idrob_cp0_write_data),
     .exception_type_out             (idrob_exception_type),
     .funct_out                      (idrob_funct),
     .shamt_out                      (idrob_shamt),
-    .operand_is_ref_1_out          (idrob_operand_is_ref_1),
-    .operand_is_ref_2_out          (idrob_operand_is_ref_2),
+    .operand_is_ref_1_out           (idrob_operand_is_ref_1),
+    .operand_is_ref_2_out           (idrob_operand_is_ref_2),
     .operand_data_1_out             (idrob_operand_data_1),
     .operand_data_2_out             (idrob_operand_data_2),
     .pc_out                         (idrob_pc)
@@ -270,26 +282,27 @@ module ID_tb(
     `DISPLAY("is_inst_taken     ", idrob_is_inst_branch_taken);
     `DISPLAY("is_inst_determ    ", idrob_is_inst_branch_determined);
     `DISPLAY("inst_target       ", idrob_inst_branch_target);
+    `DISPLAY("is_delayslot      ", idrob_is_delayslot);
     $display("memory accessing info");
     `DISPLAY("mem_write_flag    ", idrob_mem_write_flag);
     `DISPLAY("mem_read_flag     ", idrob_mem_read_flag);
     `DISPLAY("mem_sign_ext_flag ", idrob_mem_sign_ext_flag);
     `DISPLAY("mem_sel           ", idrob_mem_sel);
-    `DISPLAY("mem_write_is_ref ", idrob_mem_write_is_ref);
+    `DISPLAY("mem_write_is_ref  ", idrob_mem_write_is_ref);
     `DISPLAY("mem_write_data    ", idrob_mem_write_data);
     $display("CP0 info");
     `DISPLAY("cp0_addr          ", idrob_cp0_addr);
     `DISPLAY("cp0_read_flag     ", idrob_cp0_read_flag);
     `DISPLAY("cp0_write_flag    ", idrob_cp0_write_flag);
-    `DISPLAY("cp0_write_is_ref ", idrob_cp0_write_is_ref);
+    `DISPLAY("cp0_write_is_ref  ", idrob_cp0_write_is_ref);
     `DISPLAY("cp0_write_data    ", idrob_cp0_write_data);
     $display("exception info");
     `DISPLAY("exception_type    ", idrob_exception_type);
     $display("to ROB stage");
     `DISPLAY("funct             ", idrob_funct);
     `DISPLAY("shamt             ", idrob_shamt);
-    `DISPLAY("operand_is_ref_1 ", idrob_operand_is_ref_1);
-    `DISPLAY("operand_is_ref_2 ", idrob_operand_is_ref_2);
+    `DISPLAY("operand_is_ref_1  ", idrob_operand_is_ref_1);
+    `DISPLAY("operand_is_ref_2  ", idrob_operand_is_ref_2);
     `DISPLAY("operand_data_1    ", idrob_operand_data_1);
     `DISPLAY("operand_data_2    ", idrob_operand_data_2);
     `DISPLAY("pc                ", idrob_pc);
