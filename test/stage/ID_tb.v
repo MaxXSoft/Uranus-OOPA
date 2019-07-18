@@ -259,42 +259,43 @@ module ID_tb(
         32'hbfc00024: $display(">>>>> invalid instruction");
       endcase
 
-      $display("regfile writer");
-      `DISPLAY("  reg_write_en      ", idrob_reg_write_en);
-      `DISPLAY("  reg_write_addr    ", idrob_reg_write_addr);
-      $display("branch info (from decoder)");
-      `DISPLAY("  is_inst_branch    ", idrob_is_inst_branch);
-      `DISPLAY("  is_inst_jump      ", idrob_is_inst_jump);
-      `DISPLAY("  is_inst_taken     ", idrob_is_inst_branch_taken);
-      `DISPLAY("  is_inst_determ    ", idrob_is_inst_branch_determined);
-      `DISPLAY("  inst_target       ", idrob_inst_branch_target);
-      $display("memory accessing info");
-      `DISPLAY("  mem_write_flag    ", idrob_mem_write_flag);
-      `DISPLAY("  mem_read_flag     ", idrob_mem_read_flag);
-      `DISPLAY("  mem_sign_ext_flag ", idrob_mem_sign_ext_flag);
-      `DISPLAY("  mem_sel           ", idrob_mem_sel);
-      `DISPLAY("  mem_write_is_ref ", idrob_mem_write_is_ref);
-      `DISPLAY("  mem_write_data    ", idrob_mem_write_data);
-      $display("CP0 info");
-      `DISPLAY("  cp0_addr          ", idrob_cp0_addr);
-      `DISPLAY("  cp0_read_flag     ", idrob_cp0_read_flag);
-      `DISPLAY("  cp0_write_flag    ", idrob_cp0_write_flag);
-      `DISPLAY("  cp0_write_is_ref ", idrob_cp0_write_is_ref);
-      `DISPLAY("  cp0_write_data    ", idrob_cp0_write_data);
-      $display("exception info");
-      `DISPLAY("  exception_type    ", idrob_exception_type);
-      $display("to ROB stage");
-      `DISPLAY("  funct             ", idrob_funct);
-      `DISPLAY("  shamt             ", idrob_shamt);
-      `DISPLAY("  operand_is_ref_1 ", idrob_operand_is_ref_1);
-      `DISPLAY("  operand_is_ref_2 ", idrob_operand_is_ref_2);
-      `DISPLAY("  operand_data_1    ", idrob_operand_data_1);
-      `DISPLAY("  operand_data_2    ", idrob_operand_data_2);
-      `DISPLAY("  pc                ", idrob_pc);
-      $display("");
-
-      `END_AT_TICK(11);
     end
+
+    $display("regfile writer");
+    `DISPLAY("reg_write_en      ", idrob_reg_write_en);
+    `DISPLAY("reg_write_addr    ", idrob_reg_write_addr);
+    $display("branch info (from decoder)");
+    `DISPLAY("is_inst_branch    ", idrob_is_inst_branch);
+    `DISPLAY("is_inst_jump      ", idrob_is_inst_jump);
+    `DISPLAY("is_inst_taken     ", idrob_is_inst_branch_taken);
+    `DISPLAY("is_inst_determ    ", idrob_is_inst_branch_determined);
+    `DISPLAY("inst_target       ", idrob_inst_branch_target);
+    $display("memory accessing info");
+    `DISPLAY("mem_write_flag    ", idrob_mem_write_flag);
+    `DISPLAY("mem_read_flag     ", idrob_mem_read_flag);
+    `DISPLAY("mem_sign_ext_flag ", idrob_mem_sign_ext_flag);
+    `DISPLAY("mem_sel           ", idrob_mem_sel);
+    `DISPLAY("mem_write_is_ref ", idrob_mem_write_is_ref);
+    `DISPLAY("mem_write_data    ", idrob_mem_write_data);
+    $display("CP0 info");
+    `DISPLAY("cp0_addr          ", idrob_cp0_addr);
+    `DISPLAY("cp0_read_flag     ", idrob_cp0_read_flag);
+    `DISPLAY("cp0_write_flag    ", idrob_cp0_write_flag);
+    `DISPLAY("cp0_write_is_ref ", idrob_cp0_write_is_ref);
+    `DISPLAY("cp0_write_data    ", idrob_cp0_write_data);
+    $display("exception info");
+    `DISPLAY("exception_type    ", idrob_exception_type);
+    $display("to ROB stage");
+    `DISPLAY("funct             ", idrob_funct);
+    `DISPLAY("shamt             ", idrob_shamt);
+    `DISPLAY("operand_is_ref_1 ", idrob_operand_is_ref_1);
+    `DISPLAY("operand_is_ref_2 ", idrob_operand_is_ref_2);
+    `DISPLAY("operand_data_1    ", idrob_operand_data_1);
+    `DISPLAY("operand_data_2    ", idrob_operand_data_2);
+    `DISPLAY("pc                ", idrob_pc);
+    $display("");
+
+    `END_AT_TICK(11);
   end
 
 endmodule // ID_tb
