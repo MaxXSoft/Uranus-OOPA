@@ -85,6 +85,7 @@ module PC_tb(
 
     `ADD_BRANCH_CHECK(32'hbfc00010, 32'hbfc00000, 0, 1);
 
+    // just check if stall signal is working properly
     if (`TICK >= 32'h4a && `TICK <= 32'h4e) stall <= 1;
 
     // `DISPLAY("mod_is_branch_taken ", mod_is_branch_taken);
