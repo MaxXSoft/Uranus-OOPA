@@ -8,8 +8,8 @@ module RegFile(
   input                   rst,
   // write channel
   input                   write_en,
-  input   [`REG_ADDR_BUS] write_addr,
   input                   write_restore,
+  input   [`REG_ADDR_BUS] write_addr,
   input                   write_is_ref,
   input   [`DATA_BUS]     write_data,
   // read channel (x2)
@@ -40,18 +40,19 @@ module RegFile(
         ref_id[i] <= 0;
       end
     end
+    else if (write_restore) begin
+      integer i;
+      for (i = 0; i < 32; i = i + 1) begin
+        is_ref[i] <= 0;
+      end
+    end
     else if (write_en && |write_addr) begin
-      if (write_restore) begin
-        is_ref[write_addr] <= 0;
+      is_ref[write_addr] <= write_is_ref;
+      if (write_is_ref) begin
+        ref_id[write_addr] <= write_data[`ROB_ADDR_BUS];
       end
       else begin
-        is_ref[write_addr] <= write_is_ref;
-        if (write_is_ref) begin
-          ref_id[write_addr] <= write_data[`ROB_ADDR_BUS];
-        end
-        else begin
-          reg_val[write_addr] <= write_data;
-        end
+        reg_val[write_addr] <= write_data;
       end
     end
   end
