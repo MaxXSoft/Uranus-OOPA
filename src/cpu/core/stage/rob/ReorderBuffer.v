@@ -55,6 +55,7 @@ module ReorderBuffer(
   input   [`DATA_BUS]     operand_data_2_in,
   input   [`ADDR_BUS]     pc_in,
   // output signals
+  output  [`ROB_ADDR_BUS] rob_addr_out,
   output                  done_out,
   output                  reg_write_en_out,
   output  [`REG_ADDR_BUS] reg_write_addr_out,
@@ -88,6 +89,7 @@ module ReorderBuffer(
 );
 
   // output signals
+  reg[`ROB_ADDR_BUS]  rob_addr_out;
   reg                 done_out;
   reg                 reg_write_en_out;
   reg[`REG_ADDR_BUS]  reg_write_addr_out;
@@ -236,12 +238,11 @@ module ReorderBuffer(
                       robl_done[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
 
   // ROB line selector
-  // policy: write (rather than update) first
+  // policy: write (rather than update) first, cannot write when erase
   generate
     for (i = 0; i < `ROB_SIZE; i = i + 1) begin
       assign line_write_en[i] =
-          write_en ? (erase_en ? erase_from_addr == i :
-                                 tail_ptr[`ROB_ADDR_WIDTH - 1:0] == i) :
+          write_en && !erase_en ? tail_ptr[`ROB_ADDR_WIDTH - 1:0] == i :
           update_en ? update_addr == i : 0;
     end
   endgenerate
@@ -249,6 +250,7 @@ module ReorderBuffer(
   // read from ROB
   always @(*) begin
     if (!rst) begin
+      rob_addr_out <= 0;
       done_out <= 0;
       reg_write_en_out <= 0;
       reg_write_addr_out <= 0;
@@ -281,6 +283,7 @@ module ReorderBuffer(
       pc_out <= 0;
     end
     else if (read_en) begin
+      rob_addr_out <= read_ptr[`ROB_ADDR_WIDTH - 1:0];
       done_out <= robl_done[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
       reg_write_en_out <= robl_reg_write_en[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
       reg_write_addr_out <= robl_reg_write_addr[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
@@ -313,6 +316,7 @@ module ReorderBuffer(
       pc_out <= robl_pc[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
     end
     else if (read_head_en) begin
+      rob_addr_out <= head_ptr[`ROB_ADDR_WIDTH - 1:0];
       done_out <= robl_done[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       reg_write_en_out <= robl_reg_write_en[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       reg_write_addr_out <= robl_reg_write_addr[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
@@ -404,8 +408,7 @@ module ReorderBuffer(
       tail_ptr <= 0;
     end
     else if (erase_en) begin
-      tail_ptr <= write_en ? {1'b0, erase_from_addr} + 1 :
-                             {1'b0, erase_from_addr};
+      tail_ptr <= {1'b0, erase_from_addr};
     end
     else if (write_en) begin
       tail_ptr <= tail_ptr + 1;
