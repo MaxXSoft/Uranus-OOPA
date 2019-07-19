@@ -227,7 +227,7 @@ module ReorderBuffer(
   endgenerate
 
   // pointers of FIFO
-  reg[`ROB_SIZE:0] head_ptr, read_ptr, tail_ptr;
+  reg[`ROB_ADDR_WIDTH:0] head_ptr, read_ptr, tail_ptr;
 
   // FIFO indicator
   wire foe_head = head_ptr[`ROB_ADDR_WIDTH - 1:0] == tail_ptr[`ROB_ADDR_WIDTH - 1:0];
