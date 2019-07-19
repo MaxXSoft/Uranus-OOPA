@@ -27,7 +27,8 @@ module ReorderBuffer_tb(
   wire                can_read;
   wire                can_write;
   wire                can_commit;
-  wire[`ROB_ADDR_BUS] rob_addr_out;
+  wire[`ROB_ADDR_BUS] rob_read_addr_out;
+  wire[`ROB_ADDR_BUS] rob_write_addr_out;
   wire                done_out;
   wire                reg_write_en_out;
   wire[`REG_ADDR_BUS] reg_write_addr_out;
@@ -102,7 +103,8 @@ module ReorderBuffer_tb(
     .operand_data_1_in              (0),
     .operand_data_2_in              (0),
     .pc_in                          (pc),
-    .rob_addr_out                   (rob_addr_out),
+    .rob_read_addr_out              (rob_read_addr_out),
+    .rob_write_addr_out             (rob_write_addr_out),
     .done_out                       (done_out),
     .reg_write_en_out               (reg_write_en_out),
     .reg_write_addr_out             (reg_write_addr_out),
@@ -219,12 +221,13 @@ module ReorderBuffer_tb(
         end
       endcase
       
-    `DISPLAY("can_read      ", can_read);
-    `DISPLAY("can_write     ", can_write);
-    `DISPLAY("can_commit    ", can_commit);
-    `DISPLAY("rob_addr_out  ", rob_addr_out);
-    `DISPLAY("pc            ", pc);
-    `DISPLAY("pc_out        ", pc_out);
+    `DISPLAY("can_read            ", can_read);
+    `DISPLAY("can_write           ", can_write);
+    `DISPLAY("can_commit          ", can_commit);
+    `DISPLAY("rob_read_addr_out   ", rob_read_addr_out);
+    `DISPLAY("rob_write_addr_out  ", rob_write_addr_out);
+    `DISPLAY("pc                  ", pc);
+    `DISPLAY("pc_out              ", pc_out);
     $display("");
     `END_AT_TICK(6);
     end
