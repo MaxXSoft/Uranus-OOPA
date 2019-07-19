@@ -58,7 +58,8 @@ module ReorderBuffer(
   input   [`DATA_BUS]     operand_data_2_in,
   input   [`ADDR_BUS]     pc_in,
   // output signals
-  output  [`ROB_ADDR_BUS] rob_addr_out,
+  output  [`ROB_ADDR_BUS] rob_read_addr_out,
+  output  [`ROB_ADDR_BUS] rob_write_addr_out,
   output                  done_out,
   output                  reg_write_en_out,
   output  [`REG_ADDR_BUS] reg_write_addr_out,
@@ -92,7 +93,7 @@ module ReorderBuffer(
 );
 
   // output signals
-  reg[`ROB_ADDR_BUS]  rob_addr_out;
+  reg[`ROB_ADDR_BUS]  rob_read_addr_out;
   reg                 done_out;
   reg                 reg_write_en_out;
   reg[`REG_ADDR_BUS]  reg_write_addr_out;
@@ -237,6 +238,9 @@ module ReorderBuffer(
   assign tail_ptr_fwd = erase_en ? {1'b0, erase_from_addr} :
                         write_en ? tail_ptr + 1 : tail_ptr;
 
+  // output of write ROB address
+  assign rob_write_addr_out = tail_ptr_fwd[`ROB_ADDR_WIDTH - 1:0];
+
   // FIFO indicator
   wire foe_head = head_ptr_fwd[`ROB_ADDR_WIDTH - 1:0] == tail_ptr_fwd[`ROB_ADDR_WIDTH - 1:0];
   wire foe_read = read_ptr_fwd[`ROB_ADDR_WIDTH - 1:0] == tail_ptr_fwd[`ROB_ADDR_WIDTH - 1:0];
@@ -259,7 +263,7 @@ module ReorderBuffer(
   // read from ROB
   always @(*) begin
     if (!rst) begin
-      rob_addr_out <= 0;
+      rob_read_addr_out <= 0;
       done_out <= 0;
       reg_write_en_out <= 0;
       reg_write_addr_out <= 0;
@@ -292,7 +296,7 @@ module ReorderBuffer(
       pc_out <= 0;
     end
     else if (read_en) begin
-      rob_addr_out <= read_ptr[`ROB_ADDR_WIDTH - 1:0];
+      rob_read_addr_out <= read_ptr[`ROB_ADDR_WIDTH - 1:0];
       if (`CAN_FORWARD(read_ptr[`ROB_ADDR_WIDTH - 1:0])) begin
         // data forwarding
         done_out <= done_in;
@@ -360,7 +364,7 @@ module ReorderBuffer(
       end
     end
     else begin
-      rob_addr_out <= head_ptr[`ROB_ADDR_WIDTH - 1:0];
+      rob_read_addr_out <= head_ptr[`ROB_ADDR_WIDTH - 1:0];
       if (`CAN_FORWARD(head_ptr[`ROB_ADDR_WIDTH - 1:0])) begin
         // data forwarding
         done_out <= done_in;
