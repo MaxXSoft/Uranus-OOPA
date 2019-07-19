@@ -9,7 +9,6 @@ module ReorderBuffer(
   input                   rst,
   // read control
   input                   read_en,
-  input                   read_head_en,
   output                  can_read,
   // write control
   input                   write_en,
@@ -315,7 +314,7 @@ module ReorderBuffer(
       operand_data_2_out <= robl_operand_data_2[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
       pc_out <= robl_pc[read_ptr[`ROB_ADDR_WIDTH - 1:0]];
     end
-    else if (read_head_en) begin
+    else begin
       rob_addr_out <= head_ptr[`ROB_ADDR_WIDTH - 1:0];
       done_out <= robl_done[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       reg_write_en_out <= robl_reg_write_en[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
@@ -347,38 +346,6 @@ module ReorderBuffer(
       operand_data_1_out <= robl_operand_data_1[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       operand_data_2_out <= robl_operand_data_2[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       pc_out <= robl_pc[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
-    end
-    else begin
-      done_out <= 0;
-      reg_write_en_out <= 0;
-      reg_write_addr_out <= 0;
-      is_branch_taken_out <= 0;
-      pht_index_out <= 0;
-      is_inst_branch_out <= 0;
-      is_inst_jump_out <= 0;
-      is_inst_branch_taken_out <= 0;
-      is_inst_branch_determined_out <= 0;
-      inst_branch_target_out <= 0;
-      is_delayslot_out <= 0;
-      mem_write_flag_out <= 0;
-      mem_read_flag_out <= 0;
-      mem_sign_ext_flag_out <= 0;
-      mem_sel_out <= 0;
-      mem_write_is_ref_out <= 0;
-      mem_write_data_out <= 0;
-      cp0_addr_out <= 0;
-      cp0_read_flag_out <= 0;
-      cp0_write_flag_out <= 0;
-      cp0_write_is_ref_out <= 0;
-      cp0_write_data_out <= 0;
-      exception_type_out <= 0;
-      funct_out <= 0;
-      shamt_out <= 0;
-      operand_is_ref_1_out <= 0;
-      operand_is_ref_2_out <= 0;
-      operand_data_1_out <= 0;
-      operand_data_2_out <= 0;
-      pc_out <= 0;
     end
   end
 
