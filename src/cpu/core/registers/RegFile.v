@@ -8,10 +8,13 @@ module RegFile(
   input                   rst,
   // write channel
   input                   write_en,
-  input                   write_restore,
   input   [`REG_ADDR_BUS] write_addr,
-  input                   write_is_ref,
-  input   [`DATA_BUS]     write_data,
+  input   [`ROB_ADDR_BUS] write_ref_id,
+  // commit channel
+  input                   commit_en,
+  input                   commit_restore,
+  input   [`REG_ADDR_BUS] commit_addr,
+  input   [`DATA_BUS]     commit_data,
   // read channel (x2)
   input                   read_en_1,
   input                   read_en_2,
@@ -30,30 +33,47 @@ module RegFile(
   // stores RS/ROB id
   reg[`ROB_ADDR_BUS] ref_id[31:0];
 
-  // write channel
+  // update 'is_ref'
+  always @(posedge clk) begin
+    if (!rst || commit_restore) begin
+      integer i;
+      for (i = 0; i < 32; i = i + 1) begin
+        is_ref[i] <= 0;
+      end
+    end
+    else begin
+      if (write_en) begin
+        is_ref[write_addr] <= 1;
+      end
+      if (commit_en && !(write_en && commit_addr == write_addr)) begin
+        is_ref[commit_addr] <= 0;
+      end
+    end
+  end
+
+  // update 'reg_val'
   always @(posedge clk) begin
     if (!rst) begin
       integer i;
       for (i = 0; i < 32; i = i + 1) begin
-        is_ref[i] <= 0;
         reg_val[i] <= 0;
+      end
+    end
+    else if (commit_en && |commit_addr) begin
+      reg_val[commit_addr] <= commit_data;
+    end
+  end
+
+  // update 'ref_id'
+  always @(posedge clk) begin
+    if (!rst) begin
+      integer i;
+      for (i = 0; i < 32; i = i + 1) begin
         ref_id[i] <= 0;
       end
     end
-    else if (write_restore) begin
-      integer i;
-      for (i = 0; i < 32; i = i + 1) begin
-        is_ref[i] <= 0;
-      end
-    end
     else if (write_en && |write_addr) begin
-      is_ref[write_addr] <= write_is_ref;
-      if (write_is_ref) begin
-        ref_id[write_addr] <= write_data[`ROB_ADDR_BUS];
-      end
-      else begin
-        reg_val[write_addr] <= write_data;
-      end
+      ref_id[write_addr] <= write_ref_id;
     end
   end
 
@@ -67,16 +87,23 @@ module RegFile(
       read_data_1 <= 0;
     end
     else if (read_en_1) begin
-      if (write_en && read_addr_1 == write_addr) begin
+      if (commit_restore) begin
         // data forwarding
-        if (write_restore) begin
-          read_is_ref_1 <= 0;
-          read_data_1 <= reg_val[read_addr_1];
-        end
-        else begin
-          read_is_ref_1 <= write_is_ref;
-          read_data_1 <= write_data;
-        end
+        read_is_ref_1 <= 0;
+        read_data_1 <= reg_val[read_addr_1];
+      end
+      else if (write_en && read_addr_1 == write_addr) begin
+        // data forwarding
+        read_is_ref_1 <= 1;
+        read_data_1 <= {
+          {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
+          write_ref_id
+        };
+      end
+      else if (commit_en && read_addr_1 == commit_addr) begin
+        // data forwarding
+        read_is_ref_2 <= 0;
+        read_data_2 <= commit_data;
       end
       else begin
         read_is_ref_1 <= is_ref[read_addr_1];
@@ -107,16 +134,23 @@ module RegFile(
       read_data_2 <= 0;
     end
     else if (read_en_2) begin
-      if (write_en && read_addr_2 == write_addr) begin
+      if (commit_restore) begin
         // data forwarding
-        if (write_restore) begin
-          read_is_ref_2 <= 0;
-          read_data_2 <= reg_val[read_addr_2];
-        end
-        else begin
-          read_is_ref_2 <= write_is_ref;
-          read_data_2 <= write_data;
-        end
+        read_is_ref_2 <= 0;
+        read_data_2 <= reg_val[read_addr_2];
+      end
+      else if (write_en && read_addr_2 == write_addr) begin
+        // data forwarding
+        read_is_ref_2 <= 1;
+        read_data_2 <= {
+          {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
+          write_ref_id
+        };
+      end
+      else if (commit_en && read_addr_2 == commit_addr) begin
+        // data forwarding
+        read_is_ref_2 <= 0;
+        read_data_2 <= commit_data;
       end
       else begin
         read_is_ref_2 <= is_ref[read_addr_2];
