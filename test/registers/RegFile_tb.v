@@ -2,6 +2,7 @@
 
 `include "tb.v"
 `include "bus.v"
+`include "rob.v"
 
 module RegFile_tb(
   input clk,
@@ -13,9 +14,11 @@ module RegFile_tb(
   // input signals
   reg                 write_en;
   reg[`REG_ADDR_BUS]  write_addr;
-  reg                 write_restore;
-  reg                 write_is_ref;
-  reg[`DATA_BUS]      write_data;
+  reg[`ROB_ADDR_BUS]  write_ref_id;
+  reg                 commit_en;
+  reg                 commit_restore;
+  reg[`REG_ADDR_BUS]  commit_addr;
+  reg[`DATA_BUS]      commit_data;
   reg                 read_en_1;
   reg                 read_en_2;
   reg[`REG_ADDR_BUS]  read_addr_1;
@@ -32,9 +35,11 @@ module RegFile_tb(
     .rst            (rst),
     .write_en       (write_en),
     .write_addr     (write_addr),
-    .write_restore  (write_restore),
-    .write_is_ref   (write_is_ref),
-    .write_data     (write_data),
+    .write_ref_id   (write_ref_id),
+    .commit_en      (commit_en),
+    .commit_restore (commit_restore),
+    .commit_addr    (commit_addr),
+    .commit_data    (commit_data),
     .read_en_1      (read_en_1),
     .read_en_2      (read_en_2),
     .read_addr_1    (read_addr_1),
@@ -49,9 +54,11 @@ module RegFile_tb(
     if (!rst) begin
       write_en <= 0;
       write_addr <= 0;
-      write_restore <= 0;
-      write_is_ref <= 0;
-      write_data <= 0;
+      write_ref_id <= 0;
+      commit_en <= 0;
+      commit_restore <= 0;
+      commit_addr <= 0;
+      commit_data <= 0;
       read_en_1 <= 0;
       read_en_2 <= 0;
       read_addr_1 <= 0;
@@ -65,28 +72,44 @@ module RegFile_tb(
 
       case (`TICK)
         0: begin
-          $display("write value");
-          write_en <= 1;
-          write_addr <= 1;
-          write_restore <= 0;
-          write_is_ref <= 0;
-          write_data <= 32'h12345678;
+          $display("commit value");
+          write_en <= 0;
+          write_addr <= 0;
+          write_ref_id <= 0;
+          commit_en <= 1;
+          commit_restore <= 0;
+          commit_addr <= 1;
+          commit_data <= 32'h12345678;
         end
         1: begin
-          $display("write rsid");
+          $display("write ref id");
           write_en <= 1;
           write_addr <= 1;
-          write_restore <= 0;
-          write_is_ref <= 1;
-          write_data <= 32'h0000000a;
+          write_ref_id <= `ROB_ADDR_WIDTH'h0a;
+          commit_en <= 0;
+          commit_restore <= 0;
+          commit_addr <= 0;
+          commit_data <= 0;
         end
         2: begin
-          $display("restore value");
+          $display("write and commit at same time");
           write_en <= 1;
-          write_addr <= 1;
-          write_restore <= 1;
-          write_is_ref <= 0;
-          write_data <= 0;
+          write_addr <= 2;
+          write_ref_id <= `ROB_ADDR_WIDTH'h0f;
+          commit_en <= 1;
+          commit_restore <= 0;
+          commit_addr <= 2;
+          commit_data <= 32'habcdef00;
+        end
+        3: begin
+          $display("restore value");
+          write_en <= 0;
+          write_addr <= 0;
+          write_ref_id <= 0;
+          commit_en <= 0;
+          commit_restore <= 1;
+          commit_addr <= 0;
+          commit_data <= 0;
         end
       endcase
     end
@@ -96,7 +119,7 @@ module RegFile_tb(
     `DISPLAY("read_data_1   ", read_data_1);
     `DISPLAY("read_data_2   ", read_data_2);
     $display("");
-    `END_AT_TICK(3);
+    `END_AT_TICK(4);
   end
 
 endmodule // RegFile_tb
