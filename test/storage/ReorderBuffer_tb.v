@@ -226,7 +226,7 @@ module ReorderBuffer_tb(
     `DISPLAY("pc            ", pc);
     `DISPLAY("pc_out        ", pc_out);
     $display("");
-    `END_AT_TICK(7);
+    `END_AT_TICK(6);
     end
   end
 
