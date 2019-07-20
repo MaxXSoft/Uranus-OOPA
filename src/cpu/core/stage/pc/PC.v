@@ -7,17 +7,17 @@
 module PC(
   input               clk,
   input               rst,
-  // from ID
+  // control signals
+  input               flush,
+  input               stall,
+  input   [`ADDR_BUS] exc_pc,
+  // branch info
   input               is_branch_in,     // is last inst a branch/jump
   input               is_jump_in,       // is 'j' or 'jal'
   input               is_taken_in,      // is last branch taken
   input   [`GHR_BUS]  last_pht_index,   // last index of PHT
   input   [`ADDR_BUS] inst_pc,          // last PC of instruction
   input   [`ADDR_BUS] target_in,        // last branch target
-  // control signals
-  input               flush,
-  input               stall,
-  input   [`ADDR_BUS] exc_pc,
   // output signals
   output              is_branch_taken,
   output  [`GHR_BUS]  pht_index_out,
