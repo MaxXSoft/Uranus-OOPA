@@ -81,11 +81,12 @@ module ROB(
 );
 
   // indicate if input from ID is valid instruction information
-  // rather than bubble in pipeline
-  wire is_valid_inst_info = reg_write_en_in || is_inst_branch_in ||
-                            mem_write_flag_in || mem_read_flag_in ||
-                            cp0_read_flag_in || cp0_write_flag_in ||
-                            |exception_type_in;
+  // rather than NOP or bubble in pipeline
+  wire is_valid_inst_info =
+      reg_write_en_in ? |reg_write_addr_in :
+                        (is_inst_branch_in || mem_write_flag_in ||
+                        mem_read_flag_in || cp0_read_flag_in ||
+                        cp0_write_flag_in || |exception_type_in);
 
   // generate reorder buffer control signal
   assign rob_write_en = is_valid_inst_info && rob_can_write;
