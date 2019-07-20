@@ -24,7 +24,7 @@ module PHT(
       // reset all of the counters
       integer i;
       for (i = 0; i < `PHT_SIZE; i = i + 1) begin
-        counters[i] <= 2'b00;
+        counters[i] <= 2'b10;
       end
     end
     else if (is_last_branch) begin
