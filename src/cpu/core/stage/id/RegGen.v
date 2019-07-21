@@ -3,20 +3,17 @@
 `include "bus.v"
 `include "opcode.v"
 `include "regimm.v"
-`include "funct.v"
 `include "cp0.v"
 
 module RegGen(
   input                     rst,
   // instruction info
-  input   [`ADDR_BUS]       pc,
   input   [`INST_OP_BUS]    op,
   input   [`REG_ADDR_BUS]   rs,
   input   [`REG_ADDR_BUS]   rt,
   input   [`REG_ADDR_BUS]   rd,
   input   [`HALF_DATA_BUS]  imm,
   input                     is_cp0,
-  input   [`FUNCT_BUS]      funct,
   // regfile read & write
   input                     reg_read_is_ref_1,
   input                     reg_read_is_ref_2,
@@ -98,7 +95,7 @@ module RegGen(
         // coprocessor
         `OP_CP0: begin
           reg_read_en_1 <= 1;
-          reg_read_en_2 <= 1;
+          reg_read_en_2 <= 0;
           reg_read_addr_1 <= rt;
           reg_read_addr_2 <= 0;
         end
@@ -112,9 +109,6 @@ module RegGen(
     end
   end
 
-  // calculate link address
-  wire[`ADDR_BUS] link_addr = pc + 8;
-
   // generate operand_1
   always @(*) begin
     if (!rst) begin
@@ -127,30 +121,10 @@ module RegGen(
         `OP_ADDI, `OP_ADDIU, `OP_SLTI, `OP_SLTIU,
         `OP_ANDI, `OP_ORI, `OP_XORI, `OP_LUI,
         // memory accessing
-        `OP_LB, `OP_LH, `OP_LW, `OP_LBU,
-        `OP_LHU, `OP_SB, `OP_SH, `OP_SW,
-        `OP_SPECIAL2: begin
+        `OP_LB, `OP_LH, `OP_LW, `OP_LBU, `OP_LHU, `OP_SB, `OP_SH, `OP_SW,
+        `OP_SPECIAL, `OP_SPECIAL2, `OP_REGIMM, `OP_CP0: begin
           operand_is_ref_1 <= reg_read_is_ref_1;
           operand_data_1 <= reg_read_data_1;
-        end
-        `OP_SPECIAL: begin
-          if (funct == `FUNCT_JALR) begin
-            operand_is_ref_1 <= 0;
-            operand_data_1 <= link_addr;
-          end
-          else begin
-            operand_is_ref_1 <= reg_read_is_ref_1;
-            operand_data_1 <= reg_read_data_1;
-          end
-        end
-        `OP_REGIMM: begin
-          operand_is_ref_1 <= 0;
-          operand_data_1 <= rt == `REGIMM_BLTZAL ||
-                            rt == `REGIMM_BGEZAL ? link_addr : 0;
-        end
-        `OP_JAL: begin
-          operand_is_ref_1 <= 0;
-          operand_data_1 <= link_addr;
         end
         default: begin
           operand_is_ref_1 <= 0;
@@ -176,14 +150,13 @@ module RegGen(
           operand_is_ref_2 <= 0;
           operand_data_2 <= zero_extended_imm_hi;
         end
-        // arithmetic & logic (immediate)
-        `OP_ADDI, `OP_ADDIU, `OP_SLTI, `OP_SLTIU,
-        // memory accessing
-        `OP_LB, `OP_LH, `OP_LW, `OP_LBU,
-        `OP_LHU, `OP_SB, `OP_SH, `OP_SW: begin
+        `OP_ADDI, `OP_ADDIU, `OP_SLTI, `OP_SLTIU: begin
           operand_is_ref_2 <= 0;
           operand_data_2 <= sign_extended_imm;
         end
+        // memory accessing (store)
+        `OP_SB, `OP_SH, `OP_SW,
+        // r-type
         `OP_SPECIAL, `OP_SPECIAL2: begin
           operand_is_ref_2 <= reg_read_is_ref_2;
           operand_data_2 <= reg_read_data_2;

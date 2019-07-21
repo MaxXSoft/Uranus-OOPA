@@ -4,24 +4,23 @@
 `include "opcode.v"
 
 module MemGen(
-  input                   rst,
+  input                     rst,
   // instruction info
-  input   [`INST_OP_BUS]  op,
-  // regfile reader
-  input                   reg_read_is_ref_2,
-  input   [`DATA_BUS]     reg_read_data_2,
+  input   [`INST_OP_BUS]    op,
+  input   [`HALF_DATA_BUS]  imm,
   // memory accessing info
-  output                  mem_write_flag,
-  output                  mem_read_flag,
-  output                  mem_sign_ext_flag,
-  output  [3:0]           mem_sel,
-  output                  mem_write_is_ref,
-  output  [`DATA_BUS]     mem_write_data
+  output                    mem_write_flag,
+  output                    mem_read_flag,
+  output                    mem_sign_ext_flag,
+  output  [3:0]             mem_sel,
+  output  [`DATA_BUS]       mem_offset
 );
 
-  reg mem_write_flag, mem_read_flag, mem_sign_ext_flag, mem_write_is_ref;
+  reg mem_write_flag, mem_read_flag, mem_sign_ext_flag;
   reg[3:0] mem_sel;
-  reg[`DATA_BUS] mem_write_data;
+
+  // generate offset
+  assign mem_offset = {{16{imm[15]}}, imm};
 
   // generate control signal of memory accessing
   always @(*) begin
@@ -71,26 +70,6 @@ module MemGen(
         `OP_LH, `OP_LHU, `OP_SH: mem_sel <= 4'b0011;
         `OP_LW, `OP_SW: mem_sel <= 4'b1111;
         default: mem_sel <= 4'b0000;
-      endcase
-    end
-  end
-
-  // generate data to be written to memory
-  always @(*) begin
-    if (!rst) begin
-      mem_write_is_ref <= 0;
-      mem_write_data <= 0;
-    end
-    else begin
-      case (op)
-        `OP_SB, `OP_SH, `OP_SW: begin
-          mem_write_is_ref <= reg_read_is_ref_2;
-          mem_write_data <= reg_read_data_2;
-        end
-        default: begin
-          mem_write_is_ref <= 0;
-          mem_write_data <= 0;
-        end
       endcase
     end
   end

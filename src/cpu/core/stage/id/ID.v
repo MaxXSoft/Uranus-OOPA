@@ -2,6 +2,7 @@
 
 `include "bus.v"
 `include "branch.v"
+`include "opgen.v"
 `include "segpos.v"
 `include "cp0.v"
 
@@ -30,30 +31,23 @@ module ID(
   output                  is_branch_taken_out,
   output  [`GHR_BUS]      pht_index_out,
   // branch info (from decoder)
-  output                  is_inst_branch,
-  output                  is_inst_jump,
-  output                  is_inst_branch_taken,
-  output                  is_inst_branch_determined,
   output  [`ADDR_BUS]     inst_branch_target,
-  output                  is_next_delayslot,
-  output                  is_delayslot,
   // memory accessing info
   output                  mem_write_flag,
   output                  mem_read_flag,
   output                  mem_sign_ext_flag,
   output  [3:0]           mem_sel,
-  output                  mem_write_is_ref,
-  output  [`DATA_BUS]     mem_write_data,
+  output  [`DATA_BUS]     mem_offset,
   // CP0 info
-  output  [`CP0_ADDR_BUS] cp0_addr,
   output                  cp0_read_flag,
   output                  cp0_write_flag,
-  output                  cp0_write_is_ref,
-  output  [`DATA_BUS]     cp0_write_data,
+  output  [`CP0_ADDR_BUS] cp0_addr,
   // exception info
   output  [`EXC_TYPE_BUS] exception_type,
+  output                  is_next_delayslot,
+  output                  is_delayslot,
   // to ROB stage
-  output  [`FUNCT_BUS]    funct,
+  output  [`OPGEN_BUS]    opgen,
   output  [`SHAMT_BUS]    shamt,
   output                  operand_is_ref_1,
   output                  operand_is_ref_2,
@@ -73,35 +67,34 @@ module ID(
   wire[`JUMP_ADDR_BUS] inst_jump = inst_in[`SEG_JUMP];
   wire[`CP0_SEL_BUS] inst_sel = inst_in[`SEG_SEL];
   wire inst_is_cp0 = !(|inst_in[`SEG_EMPTY]);
+  wire inst_is_eret = inst_in == `CP0_ERET_FULL;
 
   // generate some directly connected signals
   assign is_branch_taken_out = is_branch_taken_in;
   assign pht_index_out = pht_index_in;
-  assign is_next_delayslot = is_inst_branch;
   assign is_delayslot = is_current_delayslot;
   assign shamt = inst_shamt;
   assign pc_out = pc_in;
 
   // generate funct signal
-  FunctGen funct_gen(
+  OpGen op_gen(
     .rst      (rst),
     .op       (inst_op),
     .funct_in (inst_funct),
+    .rs       (inst_rs),
     .rt       (inst_rt),
-    .funct    (funct)
+    .opgen    (opgen)
   );
 
   // generate operand_1, operand_2, reg_write_en and reg_write_addr
   RegGen reg_gen(
     .rst                (rst),
-    .pc                 (pc_in),
     .op                 (inst_op),
     .rs                 (inst_rs),
     .rt                 (inst_rt),
     .rd                 (inst_rd),
     .imm                (inst_imm),
     .is_cp0             (inst_is_cp0),
-    .funct              (funct),
     .reg_read_is_ref_1  (reg_read_is_ref_1),
     .reg_read_is_ref_2  (reg_read_is_ref_2),
     .reg_read_data_1    (reg_read_data_1),
@@ -121,20 +114,12 @@ module ID(
   // generate branch information
   BranchGen branch_gen(
     .rst                (rst),
-    .pc                 (pc_in),
     .op                 (inst_op),
     .rt                 (inst_rt),
+    .funct              (inst_funct),
     .imm                (inst_imm),
-    .funct              (funct),
     .jump_addr          (inst_jump),
-    .reg_read_is_ref_1  (reg_read_is_ref_1),
-    .reg_read_is_ref_2  (reg_read_is_ref_2),
-    .reg_read_data_1    (reg_read_data_1),
-    .reg_read_data_2    (reg_read_data_2),
-    .is_branch          (is_inst_branch),
-    .is_jump            (is_inst_jump),
-    .is_taken           (is_inst_branch_taken),
-    .is_determined      (is_inst_branch_determined),
+    .is_branch          (is_next_delayslot),
     .target             (inst_branch_target)
   );
 
@@ -142,14 +127,12 @@ module ID(
   MemGen mem_gen(
     .rst                (rst),
     .op                 (inst_op),
-    .reg_read_is_ref_2  (reg_read_is_ref_2),
-    .reg_read_data_2    (reg_read_data_2),
+    .imm                (inst_imm),
     .mem_write_flag     (mem_write_flag),
     .mem_read_flag      (mem_read_flag),
     .mem_sign_ext_flag  (mem_sign_ext_flag),
     .mem_sel            (mem_sel),
-    .mem_write_is_ref   (mem_write_is_ref),
-    .mem_write_data     (mem_write_data)
+    .mem_offset         (mem_offset)
   );
 
   // generate CP0 information
@@ -160,13 +143,9 @@ module ID(
     .rd                 (inst_rd),
     .sel                (inst_sel),
     .is_cp0             (inst_is_cp0),
-    .reg_read_is_ref_1  (reg_read_is_ref_1),
-    .reg_read_data_1    (reg_read_data_1),
-    .cp0_addr           (cp0_addr),
     .cp0_read_flag      (cp0_read_flag),
     .cp0_write_flag     (cp0_write_flag),
-    .cp0_write_is_ref   (cp0_write_is_ref),
-    .cp0_write_data     (cp0_write_data)
+    .cp0_addr           (cp0_addr)
   );
 
   // generate exception information
@@ -175,8 +154,8 @@ module ID(
     .op                 (inst_op),
     .rs                 (inst_rs),
     .rt                 (inst_rt),
-    .funct              (funct),
-    .is_eret            (inst_in == `CP0_ERET_FULL),
+    .funct              (inst_funct),
+    .is_eret            (inst_is_eret),
     .exception_type     (exception_type)
   );
 

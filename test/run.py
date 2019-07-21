@@ -3,9 +3,16 @@ import re
 import os
 
 re_modname = re.compile(r'module ([A-Za-z0-9_]+)\(')
+
+# verilator related command lines
+warn_flags = ' -Wno-UNUSED -Wno-COMBDLY'
 verilator = 'verilator -Wall --cc --exe verilator/sim.cpp'
 verilator += ' --Mdir build -Iinclude'
-verilator += ' -Wno-UNUSED -Wno-COMBDLY'
+verilator += warn_flags
+verilinter = 'verilator -Wall --lint-only -Iinclude'
+verilinter += warn_flags
+
+# 'make' command
 make_cmd = 'make -C build'
 
 def detect_dir(src):
@@ -34,8 +41,13 @@ def clean():
   cmd = 'rm -f build/*'
   run_cmd(cmd)
 
-def compile(file, mod_name):
-  cmd = '{} {} -CFLAGS "-DMODULE_NAME=V{}"'.format(verilator, file, mod_name)
+def lint(dirs, file):
+  cmd = '{}{} {}'.format(verilinter, dirs, file)
+  run_cmd(cmd)
+
+def compile(dirs, file, mod_name):
+  cmd = '{}{} {} -CFLAGS "-DMODULE_NAME=V{}"'.format(
+      verilator, dirs, file, mod_name)
   run_cmd(cmd)
 
 def make(mod_name):
@@ -57,6 +69,8 @@ if __name__ == '__main__':
                       'supported action: clean')
   parser.add_argument('-i', '--interactive', action='store_true',
                       help='enable interactive mode')
+  parser.add_argument('-l', '--lint', action='store_true',
+                      help='lint only')
   parser.add_argument('-s', '--src', default='../src',
                       help='specify project\'s source file directory')
   parser.add_argument('-v', '--version', action='version',
@@ -73,7 +87,10 @@ if __name__ == '__main__':
   else:
     # compile and run
     mod_name = get_mod_name(file)
-    verilator += detect_dir(args.src)
-    compile(file, mod_name)
-    make(mod_name)
-    run(mod_name, args.interactive)
+    dirs = detect_dir(args.src)
+    if args.lint:
+      lint(dirs, file)
+    else:
+      compile(dirs, file, mod_name)
+      make(mod_name)
+      run(mod_name, args.interactive)
