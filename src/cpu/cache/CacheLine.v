@@ -32,7 +32,7 @@ module CacheLine #(parameter
   reg[`DATA_BUS] data[2 ** OFFSET_WIDTH - 1 :0];
 
   assign valid_out = valid;
-  assign dirty_out = dirty ? dirty : 0;
+  assign dirty_out = valid ? dirty : 0;
   assign tag_out = tag;
   assign data_out = valid ? data[offset_in] : 0;
 
