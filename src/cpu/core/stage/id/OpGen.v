@@ -15,13 +15,7 @@ module OpGen(
 );
 
   reg[`OPGEN_BUS] opgen_out;
-  assign opgen = rst ? opgen_out : `FUNCT_NOP;
-
-  // TODO:
-  //    rob line IO
-  //    reorder buffer
-  //    ROB stage IO
-  //    etc.
+  assign opgen = rst ? opgen_out : `OPGEN_NOP;
 
   // generate 'opgen' signal for the function unit to perform operations
   always @(*) begin
