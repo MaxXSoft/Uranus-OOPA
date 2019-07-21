@@ -2,6 +2,7 @@
 
 `include "bus.v"
 `include "opcode.v"
+`include "funct.v"
 `include "regimm.v"
 
 /*
@@ -17,6 +18,7 @@ module BranchGen(
   // instruction info
   input   [`INST_OP_BUS]    op,
   input   [`REG_ADDR_BUS]   rt,
+  input   [`FUNCT_BUS]      funct,
   input   [`HALF_DATA_BUS]  imm,
   input   [`JUMP_ADDR_BUS]  jump_addr,
   // branch info
@@ -36,9 +38,21 @@ module BranchGen(
       target <= 0;
     end
     else begin
-      // NOTE: ignore JR and JALR
-      //       because it's target info is in operand1
       case (op)
+        `OP_SPECIAL: begin
+          case (funct)
+            `FUNCT_JR, `FUNCT_JALR: begin
+              // NOTE: ignoring JR and JALR
+              //       because it's target info is in operand1
+              is_branch <= 1;
+              target <= 0;
+            end
+            default: begin
+              is_branch <= 0;
+              target <= 0;
+            end
+          endcase
+        end
         `OP_J, `OP_JAL: begin
           is_branch <= 1;
           target <= {4'b0000, jump_addr, 2'b00};

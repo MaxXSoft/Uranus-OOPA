@@ -10,6 +10,7 @@ module OpGen(
   input                   rst,
   input   [`INST_OP_BUS]  op,
   input   [`FUNCT_BUS]    funct_in,
+  input   [`REG_ADDR_BUS] rs,
   input   [`REG_ADDR_BUS] rt,
   output  [`OPGEN_BUS]    opgen
 );
@@ -75,9 +76,11 @@ module OpGen(
       end
       // co-processor 0
       `OP_CP0: begin
-        `CP0_MFC0, `CP0_MTC0: opgen_out <= `OPGEN_CP0;
-        // ERET and other instructions
-        default: opgen_out <= `OPGEN_NOP;
+        case (rs)
+          `CP0_MFC0, `CP0_MTC0: opgen_out <= `OPGEN_CP0;
+          // ERET and other instructions
+          default: opgen_out <= `OPGEN_NOP;
+        endcase
       end
       // I-type, imm
       `OP_ADDI, `OP_ADDIU: opgen_out <= `OPGEN_ADD;
