@@ -81,6 +81,7 @@ module ID(
     .rst      (rst),
     .op       (inst_op),
     .funct_in (inst_funct),
+    .rs       (inst_rs),
     .rt       (inst_rt),
     .opgen    (opgen)
   );
@@ -115,6 +116,7 @@ module ID(
     .rst                (rst),
     .op                 (inst_op),
     .rt                 (inst_rt),
+    .funct              (inst_funct),
     .imm                (inst_imm),
     .jump_addr          (inst_jump),
     .is_branch          (is_next_delayslot),
@@ -152,7 +154,7 @@ module ID(
     .op                 (inst_op),
     .rs                 (inst_rs),
     .rt                 (inst_rt),
-    .funct              (funct),
+    .funct              (inst_funct),
     .is_eret            (inst_is_eret),
     .exception_type     (exception_type)
   );

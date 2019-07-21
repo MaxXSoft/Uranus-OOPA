@@ -19,7 +19,6 @@ module IDROB(
   input                   mem_read_flag_in,
   input                   mem_sign_ext_flag_in,
   input   [3:0]           mem_sel_in,
-  input                   mem_write_is_ref_in,
   input   [`DATA_BUS]     mem_offset_in,
   input                   cp0_read_flag_in,
   input                   cp0_write_flag_in,
