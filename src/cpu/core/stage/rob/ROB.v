@@ -4,6 +4,7 @@
 `include "branch.v"
 `include "rob.v"
 `include "opgen.v"
+`include "exception.v"
 
 module ROB(
   input                   rst,
