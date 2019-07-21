@@ -74,6 +74,7 @@ module ReorderBuffer(
   output  [`DATA_BUS]     commit_reg_write_data_out,
   output  [`EXC_TYPE_BUS] commit_exception_type_out,
   output                  commit_is_delayslot_out,
+  output  [`ADDR_BUS]     commit_pc_out,
   // erase channel
   input                   erase_en,
   input   [`ROB_ADDR_BUS] erase_from_addr
@@ -105,6 +106,7 @@ module ReorderBuffer(
   reg[`DATA_BUS]      commit_reg_write_data_out;
   reg[`EXC_TYPE_BUS]  commit_exception_type_out;
   reg                 commit_is_delayslot_out;
+  reg[`ADDR_BUS]      commit_pc_out;
 
   // control signals of ROB lines
   wire                line_write_en[`ROB_SIZE - 1:0];
@@ -199,7 +201,8 @@ module ReorderBuffer(
   reg[`ROB_ADDR_WIDTH:0] head_ptr, read_ptr, tail_ptr;
   wire[`ROB_ADDR_WIDTH:0] head_ptr_fwd, read_ptr_fwd, tail_ptr_fwd;
   assign head_ptr_fwd = commit_en ? head_ptr + 1 : head_ptr;
-  assign read_ptr_fwd = read_en ? read_ptr + 1 : read_ptr;
+  assign read_ptr_fwd = erase_en ? {1'b0, erase_from_addr} :
+                        read_en ? read_ptr + 1 : read_ptr;
   assign tail_ptr_fwd = erase_en ? {1'b0, erase_from_addr} :
                         write_en ? tail_ptr + 1 : tail_ptr;
 
@@ -209,7 +212,7 @@ module ReorderBuffer(
   // FIFO indicator
   wire foe_head = head_ptr_fwd[`ROB_ADDR_WIDTH - 1:0] == tail_ptr_fwd[`ROB_ADDR_WIDTH - 1:0];
   wire foe_read = read_ptr_fwd[`ROB_ADDR_WIDTH - 1:0] == tail_ptr_fwd[`ROB_ADDR_WIDTH - 1:0];
-  wire robl_done_fwd = update_en && head_ptr[`ROB_ADDR_WIDTH - 1:0] == update_addr ?
+  wire robl_done_fwd = update_en && head_ptr_fwd[`ROB_ADDR_WIDTH - 1:0] == update_addr ?
       1 : robl_done[head_ptr_fwd[`ROB_ADDR_WIDTH - 1:0]];
   assign can_read = !(foe_read && read_ptr_fwd == tail_ptr_fwd);
   assign can_write = !(foe_head && head_ptr_fwd != tail_ptr_fwd);
@@ -255,7 +258,7 @@ module ReorderBuffer(
       read_operand_data_2_out <= 0;
       read_pc_out <= 0;
     end
-    else if (read_en) begin
+    else begin
       read_rob_addr_out <= read_ptr[`ROB_ADDR_WIDTH - 1:0];
       if (write_en && !erase_en && read_ptr[`ROB_ADDR_WIDTH - 1:0] ==
                                    tail_ptr[`ROB_ADDR_WIDTH - 1:0]) begin
@@ -312,11 +315,13 @@ module ReorderBuffer(
       commit_reg_write_data_out <= 0;
       commit_exception_type_out <= 0;
       commit_is_delayslot_out <= 0;
+      commit_pc_out <= 0;
     end
-    else if (commit_en) begin
+    else begin
       commit_reg_write_en_out <= robl_reg_write_en[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       commit_reg_write_addr_out <= robl_reg_write_addr[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       commit_is_delayslot_out <= robl_is_delayslot[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      commit_pc_out <= robl_pc[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       if (update_en && head_ptr[`ROB_ADDR_WIDTH - 1:0] == update_addr) begin
         // data forwarding
         commit_reg_write_data_out <= update_reg_write_data_in;
@@ -343,6 +348,9 @@ module ReorderBuffer(
   always @(posedge clk) begin
     if (!rst) begin
       read_ptr <= 0;
+    end
+    else if (erase_en) begin
+      read_ptr <= {1'b0, erase_from_addr};
     end
     else if (read_en) begin
       read_ptr <= read_ptr + 1;
