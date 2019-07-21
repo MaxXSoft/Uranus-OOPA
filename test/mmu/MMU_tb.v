@@ -8,7 +8,7 @@ module MMU_tb(
   input rst
 );
 
-  `GEN_TICK(clk, rst)
+  `GEN_TICK(clk, rst);
 
   // input signals
   reg[`ADDR_BUS]  addr_in;
