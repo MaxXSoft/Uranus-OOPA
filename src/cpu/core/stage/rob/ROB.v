@@ -40,25 +40,8 @@ module ROB(
   // reorder buffer write data
   output                  rob_write_reg_write_en,
   output  [`REG_ADDR_BUS] rob_write_reg_write_addr,
-  output                  rob_write_is_branch_taken,
-  output  [`GHR_BUS]      rob_write_pht_index,
-  output  [`ADDR_BUS]     rob_write_inst_branch_target,
-  output                  rob_write_mem_write_flag,
-  output                  rob_write_mem_read_flag,
-  output                  rob_write_mem_sign_ext_flag,
-  output  [3:0]           rob_write_mem_sel,
-  output  [`DATA_BUS]     rob_write_mem_offset,
-  output                  rob_write_cp0_read_flag,
-  output                  rob_write_cp0_write_flag,
-  output  [`CP0_ADDR_BUS] rob_write_cp0_addr,
   output  [`EXC_TYPE_BUS] rob_write_exception_type,
   output                  rob_write_is_delayslot,
-  output  [`OPGEN_BUS]    rob_write_opgen,
-  output  [`SHAMT_BUS]    rob_write_shamt,
-  output                  rob_write_operand_is_ref_1,
-  output                  rob_write_operand_is_ref_2,
-  output  [`DATA_BUS]     rob_write_operand_data_1,
-  output  [`DATA_BUS]     rob_write_operand_data_2,
   output  [`ADDR_BUS]     rob_write_pc,
   // reorder buffer commit channel
   output                  rob_commit_en,
@@ -81,7 +64,29 @@ module ROB(
   // to pipeline controller
   output  [`EXC_TYPE_BUS] exception_type_out,
   output                  is_delayslot_out,
-  output  [`ADDR_BUS]     current_pc_out
+  output  [`ADDR_BUS]     current_pc_out,
+  // to II stage
+  output                  can_issue,
+  output  [`ROB_ADDR_BUS] ii_rob_addr,
+  output                  ii_is_branch_taken,
+  output  [`GHR_BUS]      ii_pht_index,
+  output  [`ADDR_BUS]     ii_inst_branch_target,
+  output                  ii_mem_write_flag,
+  output                  ii_mem_read_flag,
+  output                  ii_mem_sign_ext_flag,
+  output  [3:0]           ii_mem_sel,
+  output  [`DATA_BUS]     ii_mem_offset,
+  output                  ii_cp0_read_flag,
+  output                  ii_cp0_write_flag,
+  output  [`CP0_ADDR_BUS] ii_cp0_addr,
+  output  [`EXC_TYPE_BUS] ii_exception_type,
+  output  [`OPGEN_BUS]    ii_opgen,
+  output  [`SHAMT_BUS]    ii_shamt,
+  output                  ii_operand_is_ref_1,
+  output                  ii_operand_is_ref_2,
+  output  [`DATA_BUS]     ii_operand_data_1,
+  output  [`DATA_BUS]     ii_operand_data_2,
+  output  [`ADDR_BUS]     ii_pc
 );
 
   // generate stall request
@@ -93,25 +98,8 @@ module ROB(
   // generate write data to reorder buffer
   assign rob_write_reg_write_en = reg_write_en_in;
   assign rob_write_reg_write_addr = reg_write_addr_in;
-  assign rob_write_is_branch_taken = is_branch_taken_in;
-  assign rob_write_pht_index = pht_index_in;
-  assign rob_write_inst_branch_target = inst_branch_target_in;
-  assign rob_write_mem_write_flag = mem_write_flag_in;
-  assign rob_write_mem_read_flag = mem_read_flag_in;
-  assign rob_write_mem_sign_ext_flag = mem_sign_ext_flag_in;
-  assign rob_write_mem_sel = mem_sel_in;
-  assign rob_write_mem_offset = mem_offset_in;
-  assign rob_write_cp0_read_flag = cp0_read_flag_in;
-  assign rob_write_cp0_write_flag = cp0_write_flag_in;
-  assign rob_write_cp0_addr = cp0_addr_in;
   assign rob_write_exception_type = exception_type_in;
   assign rob_write_is_delayslot = is_delayslot_in;
-  assign rob_write_opgen = opgen_in;
-  assign rob_write_shamt = shamt_in;
-  assign rob_write_operand_is_ref_1 = operand_is_ref_1_in;
-  assign rob_write_operand_is_ref_2 = operand_is_ref_2_in;
-  assign rob_write_operand_data_1 = operand_data_1_in;
-  assign rob_write_operand_data_2 = operand_data_2_in;
   assign rob_write_pc = pc_in;
 
   // generate regfile write signals
@@ -145,5 +133,28 @@ module ROB(
   assign reg_commit_en = rob_commit_en && rob_commit_reg_write_en;
   assign reg_commit_addr = rob_commit_reg_write_addr;
   assign reg_commit_data = rob_commit_reg_write_data;
+
+  // generate signals to II stage
+  assign can_issue = rob_write_en;
+  assign ii_rob_addr = rob_write_addr_in;
+  assign ii_is_branch_taken = is_branch_taken_in;
+  assign ii_pht_index = pht_index_in;
+  assign ii_inst_branch_target = inst_branch_target_in;
+  assign ii_mem_write_flag = mem_write_flag_in;
+  assign ii_mem_read_flag = mem_read_flag_in;
+  assign ii_mem_sign_ext_flag = mem_sign_ext_flag_in;
+  assign ii_mem_sel = mem_sel_in;
+  assign ii_mem_offset = mem_offset_in;
+  assign ii_cp0_read_flag = cp0_read_flag_in;
+  assign ii_cp0_write_flag = cp0_write_flag_in;
+  assign ii_cp0_addr = cp0_addr_in;
+  assign ii_exception_type = exception_type_in;
+  assign ii_opgen = opgen_in;
+  assign ii_shamt = shamt_in;
+  assign ii_operand_is_ref_1 = operand_is_ref_1_in;
+  assign ii_operand_is_ref_2 = operand_is_ref_2_in;
+  assign ii_operand_data_1 = operand_data_1_in;
+  assign ii_operand_data_2 = operand_data_2_in;
+  assign ii_pc = pc_in;
 
 endmodule // ROB
