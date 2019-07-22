@@ -36,12 +36,9 @@ module OpGen(
           `FUNCT_NOR: opgen_out <= `OPGEN_NOR;
           `FUNCT_OR: opgen_out <= `OPGEN_OR;
           `FUNCT_XOR: opgen_out <= `OPGEN_XOR;
-          `FUNCT_SLLV: opgen_out <= `OPGEN_SLLV;
-          `FUNCT_SLL: opgen_out <= `OPGEN_SLL;
-          `FUNCT_SRAV: opgen_out <= `OPGEN_SRAV;
-          `FUNCT_SRA: opgen_out <= `OPGEN_SRA;
-          `FUNCT_SRLV: opgen_out <= `OPGEN_SRLV;
-          `FUNCT_SRL: opgen_out <= `OPGEN_SRL;
+          `FUNCT_SLLV, `FUNCT_SLL: opgen_out <= `OPGEN_SLL;
+          `FUNCT_SRAV, `FUNCT_SRA: opgen_out <= `OPGEN_SRA;
+          `FUNCT_SRLV, `FUNCT_SRL: opgen_out <= `OPGEN_SRL;
           `FUNCT_JR, `FUNCT_JALR: opgen_out <= `OPGEN_JR;
           `FUNCT_MFHI: opgen_out <= `OPGEN_MFHI;
           `FUNCT_MFLO: opgen_out <= `OPGEN_MFLO;
