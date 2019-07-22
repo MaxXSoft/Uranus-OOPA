@@ -30,8 +30,6 @@ module ROB(
   input   [`DATA_BUS]     operand_data_1_in,
   input   [`DATA_BUS]     operand_data_2_in,
   input   [`ADDR_BUS]     pc_in,
-  // stall request
-  output                  stall_request,
   // reorder buffer write channel
   output                  rob_write_en,
   input                   rob_can_write,
@@ -61,6 +59,7 @@ module ROB(
   output  [`REG_ADDR_BUS] reg_commit_addr,
   output  [`DATA_BUS]     reg_commit_data,
   // to pipeline controller
+  output                  stall_request,
   output  [`EXC_TYPE_BUS] exception_type_out,
   output                  is_delayslot_out,
   output  [`ADDR_BUS]     current_pc_out,
@@ -87,9 +86,6 @@ module ROB(
   output  [`ADDR_BUS]     ii_pc
 );
 
-  // generate stall request
-  assign stall_request = !rob_can_write;
-
   // generate reorder buffer control signal
   assign rob_write_en = rob_can_write;
 
@@ -104,6 +100,9 @@ module ROB(
   assign reg_write_en = reg_write_en_in;
   assign reg_write_addr = reg_write_addr_in;
   assign reg_write_ref_id = rob_write_addr_in;
+
+  // generate stall request
+  assign stall_request = !rob_can_write;
 
   // generate exception info
   reg[`EXC_TYPE_BUS] exception_type_out;
