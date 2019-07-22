@@ -48,7 +48,6 @@ module ID(
   output                  is_delayslot,
   // to ROB stage
   output  [`OPGEN_BUS]    opgen,
-  output  [`SHAMT_BUS]    shamt,
   output                  operand_is_ref_1,
   output                  operand_is_ref_2,
   output  [`DATA_BUS]     operand_data_1,
@@ -73,7 +72,6 @@ module ID(
   assign is_branch_taken_out = is_branch_taken_in;
   assign pht_index_out = pht_index_in;
   assign is_delayslot = is_current_delayslot;
-  assign shamt = inst_shamt;
   assign pc_out = pc_in;
 
   // generate funct signal
@@ -93,6 +91,8 @@ module ID(
     .rs                 (inst_rs),
     .rt                 (inst_rt),
     .rd                 (inst_rd),
+    .shamt              (inst_shamt),
+    .funct              (inst_funct),
     .imm                (inst_imm),
     .is_cp0             (inst_is_cp0),
     .reg_read_is_ref_1  (reg_read_is_ref_1),

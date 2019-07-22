@@ -27,7 +27,6 @@ module IDROB(
   input                   is_next_delayslot_in,
   input                   is_delayslot_in,
   input   [`OPGEN_BUS]    opgen_in,
-  input   [`SHAMT_BUS]    shamt_in,
   input                   operand_is_ref_1_in,
   input                   operand_is_ref_2_in,
   input   [`DATA_BUS]     operand_data_1_in,
@@ -50,7 +49,6 @@ module IDROB(
   output                  is_current_delayslot_out,
   output                  is_delayslot_out,
   output  [`OPGEN_BUS]    opgen_out,
-  output  [`SHAMT_BUS]    shamt_out,
   output                  operand_is_ref_1_out,
   output                  operand_is_ref_2_out,
   output  [`DATA_BUS]     operand_data_1_out,
@@ -158,12 +156,6 @@ module IDROB(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     opgen_in, opgen_out
-  );
-
-  PipelineDeliver #(`SHAMT_BUS_WIDTH) ff_shamt(
-    clk, rst, flush,
-    stall_current_stage, stall_next_stage,
-    shamt_in, shamt_out
   );
 
   PipelineDeliver #(1) ff_operand_is_ref_1(
