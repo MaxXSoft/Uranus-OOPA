@@ -26,7 +26,6 @@ module ROBII(
   input   [`CP0_ADDR_BUS] cp0_addr_in,
   input   [`EXC_TYPE_BUS] exception_type_in,
   input   [`OPGEN_BUS]    opgen_in,
-  input   [`SHAMT_BUS]    shamt_in,
   input                   operand_is_ref_1_in,
   input                   operand_is_ref_2_in,
   input   [`DATA_BUS]     operand_data_1_in,
@@ -47,7 +46,6 @@ module ROBII(
   output  [`CP0_ADDR_BUS] cp0_addr_out,
   output  [`EXC_TYPE_BUS] exception_type_out,
   output  [`OPGEN_BUS]    opgen_out,
-  output  [`SHAMT_BUS]    shamt_out,
   output                  operand_is_ref_1_out,
   output                  operand_is_ref_2_out,
   output  [`DATA_BUS]     operand_data_1_out,
@@ -143,12 +141,6 @@ module ROBII(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     opgen_in, opgen_out
-  );
-
-  PipelineDeliver #(`SHAMT_BUS_WIDTH) ff_shamt(
-    clk, rst, flush,
-    stall_current_stage, stall_next_stage,
-    shamt_in, shamt_out
   );
 
   PipelineDeliver #(1) ff_operand_is_ref_1(

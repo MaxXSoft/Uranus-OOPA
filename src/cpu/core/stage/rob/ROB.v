@@ -25,7 +25,6 @@ module ROB(
   input   [`EXC_TYPE_BUS] exception_type_in,
   input                   is_delayslot_in,
   input   [`OPGEN_BUS]    opgen_in,
-  input   [`SHAMT_BUS]    shamt_in,
   input                   operand_is_ref_1_in,
   input                   operand_is_ref_2_in,
   input   [`DATA_BUS]     operand_data_1_in,
@@ -81,7 +80,6 @@ module ROB(
   output  [`CP0_ADDR_BUS] ii_cp0_addr,
   output  [`EXC_TYPE_BUS] ii_exception_type,
   output  [`OPGEN_BUS]    ii_opgen,
-  output  [`SHAMT_BUS]    ii_shamt,
   output                  ii_operand_is_ref_1,
   output                  ii_operand_is_ref_2,
   output  [`DATA_BUS]     ii_operand_data_1,
@@ -150,7 +148,6 @@ module ROB(
   assign ii_cp0_addr = cp0_addr_in;
   assign ii_exception_type = exception_type_in;
   assign ii_opgen = opgen_in;
-  assign ii_shamt = shamt_in;
   assign ii_operand_is_ref_1 = operand_is_ref_1_in;
   assign ii_operand_is_ref_2 = operand_is_ref_2_in;
   assign ii_operand_data_1 = operand_data_1_in;
