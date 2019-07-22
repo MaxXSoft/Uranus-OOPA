@@ -38,7 +38,6 @@ module ID_tb(
   wire                id_is_next_delayslot;
   wire                id_is_delayslot;
   wire[`OPGEN_BUS]    id_opgen;
-  wire[`SHAMT_BUS]    id_shamt;
   wire                id_operand_is_ref_1;
   wire                id_operand_is_ref_2;
   wire[`DATA_BUS]     id_operand_data_1;
@@ -63,7 +62,6 @@ module ID_tb(
   wire                idrob_is_current_delayslot;
   wire                idrob_is_delayslot;
   wire[`OPGEN_BUS]    idrob_opgen;
-  wire[`SHAMT_BUS]    idrob_shamt;
   wire                idrob_operand_is_ref_1;
   wire                idrob_operand_is_ref_2;
   wire[`DATA_BUS]     idrob_operand_data_1;
@@ -111,7 +109,6 @@ module ID_tb(
     .is_delayslot             (id_is_delayslot),
 
     .opgen                    (id_opgen),
-    .shamt                    (id_shamt),
     .operand_is_ref_1         (id_operand_is_ref_1),
     .operand_is_ref_2         (id_operand_is_ref_2),
     .operand_data_1           (id_operand_data_1),
@@ -143,7 +140,6 @@ module ID_tb(
     .is_next_delayslot_in     (id_is_next_delayslot),
     .is_delayslot_in          (id_is_delayslot),
     .opgen_in                 (id_opgen),
-    .shamt_in                 (id_shamt),
     .operand_is_ref_1_in      (id_operand_is_ref_1),
     .operand_is_ref_2_in      (id_operand_is_ref_2),
     .operand_data_1_in        (id_operand_data_1),
@@ -167,7 +163,6 @@ module ID_tb(
     .is_current_delayslot_out (idrob_is_current_delayslot),
     .is_delayslot_out         (idrob_is_delayslot),
     .opgen_out                (idrob_opgen),
-    .shamt_out                (idrob_shamt),
     .operand_is_ref_1_out     (idrob_operand_is_ref_1),
     .operand_is_ref_2_out     (idrob_operand_is_ref_2),
     .operand_data_1_out       (idrob_operand_data_1),
@@ -259,7 +254,6 @@ module ID_tb(
     `DISPLAY("is_delayslot      ", idrob_is_delayslot);
     $display("to ROB stage");
     `DISPLAY("opgen             ", idrob_opgen);
-    `DISPLAY("shamt             ", idrob_shamt);
     `DISPLAY("operand_is_ref_1  ", idrob_operand_is_ref_1);
     `DISPLAY("operand_is_ref_2  ", idrob_operand_is_ref_2);
     `DISPLAY("operand_data_1    ", idrob_operand_data_1);
