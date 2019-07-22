@@ -2,6 +2,7 @@
 
 `include "bus.v"
 `include "opcode.v"
+`include "funct.v"
 `include "regimm.v"
 `include "cp0.v"
 
@@ -12,6 +13,8 @@ module RegGen(
   input   [`REG_ADDR_BUS]   rs,
   input   [`REG_ADDR_BUS]   rt,
   input   [`REG_ADDR_BUS]   rd,
+  input   [`SHAMT_BUS]      shamt,
+  input   [`FUNCT_BUS]      funct,
   input   [`HALF_DATA_BUS]  imm,
   input                     is_cp0,
   // regfile read & write
@@ -117,12 +120,29 @@ module RegGen(
     end
     else begin
       case (op)
+        `OP_SPECIAL: begin
+          case (funct)
+            // shift with amount
+            `FUNCT_SLL, `FUNCT_SRL, `FUNCT_SRA: begin
+              operand_is_ref_1 <= 0;
+              operand_data_1 <= {
+                {(`DATA_BUS_WIDTH - `SHAMT_BUS_WIDTH){1'b0}},
+                shamt
+              };
+            end
+            default: begin
+              operand_is_ref_1 <= reg_read_is_ref_1;
+              operand_data_1 <= reg_read_data_1;
+            end
+          endcase
+        end
         // immediate
         `OP_ADDI, `OP_ADDIU, `OP_SLTI, `OP_SLTIU,
         `OP_ANDI, `OP_ORI, `OP_XORI, `OP_LUI,
         // memory accessing
         `OP_LB, `OP_LH, `OP_LW, `OP_LBU, `OP_LHU, `OP_SB, `OP_SH, `OP_SW,
-        `OP_SPECIAL, `OP_SPECIAL2, `OP_REGIMM, `OP_CP0: begin
+        // other
+        `OP_SPECIAL2, `OP_REGIMM, `OP_CP0: begin
           operand_is_ref_1 <= reg_read_is_ref_1;
           operand_data_1 <= reg_read_data_1;
         end
