@@ -32,10 +32,18 @@ module CacheLine #(parameter
   (* ram_style = "block" *)
   reg[`DATA_BUS] data[2 ** OFFSET_WIDTH - 1 :0];
 
-  assign valid_out = valid;
-  assign dirty_out = valid ? dirty : 0;
-  assign tag_out = tag;
-  assign data_out = valid ? data[offset_in] : 0;
+  // generate output signals
+  reg                   valid_out;
+  reg                   dirty_out;
+  reg[TAG_WIDTH - 1:0]  tag_out;
+  reg[`DATA_BUS]        data_out;
+
+  always @(posedge clk) begin
+    valid_out <= valid;
+    dirty_out <= valid ? dirty : 0;
+    tag_out <= tag;
+    data_out <= valid ? data[offset_in] : 0;
+  end
 
   always @(posedge clk) begin
     if (!rst) begin
