@@ -72,15 +72,14 @@ module InstCache(
     kIndexWidth = `ICACHE_WIDTH,
     kOffsetWidth = `ICACHE_LINE_WIDTH - 2;
 
-  // TODO
-  // reference: Uranus Zero's unfinished instruction cache module
   // cache control
   // input signals
-  wire                    line_write_en[`ICACHE_LINE_SIZE - 1:0];
-  reg                     line_valid_in;
-  reg[kTagWidth - 1:0]    line_tag_in;
-  reg[kOffsetWidth - 1:0] line_offset_in;
-  reg[`DATA_BUS]          line_data_in;
+  wire                      line_write_en[`ICACHE_LINE_SIZE - 1:0];
+  reg                       line_valid_in;
+  reg[kTagWidth - 1:0]      line_tag_in;
+  reg[kOffsetWidth - 1:0]   line_offset_in;
+  wire[kOffsetWidth - 1:0]  line_offset_in_fwd;
+  reg[`DATA_BUS]            line_data_in;
   // output signals
   wire                    line_valid_out[`ICACHE_LINE_SIZE - 1:0];
   wire[kTagWidth - 1:0]   line_tag_out[`ICACHE_LINE_SIZE - 1:0];
@@ -101,7 +100,7 @@ module InstCache(
         .valid_in(line_valid_in),
         .dirty_in(0),
         .tag_in(line_tag_in),
-        .offset_in(line_offset_in),
+        .offset_in(line_offset_in_fwd),
         .data_byte_en(4'b1111),
         .data_in(line_data_in),
         .valid_out(line_valid_out[i]),
@@ -191,6 +190,8 @@ module InstCache(
   localparam kStateIdle = 0, kStateAddr = 1,
     kStateData = 2, kStateUpdate = 3;
 
+  assign line_offset_in_fwd = (state == kStateIdle) ? read_line_offset :
+    line_offset_in;
   assign ready = (state == kStateIdle) && 
     (!need_invalidate || addr_read != addr_invalidate) &&
     !need_memread;
@@ -263,7 +264,7 @@ module InstCache(
             // cache control
             line_valid_in <= 0;
             line_tag_in <= 0;
-            line_offset_in <= read_line_offset;
+            line_offset_in <= 0;
             line_data_in <= 0;
             cache_write_en <= 0;
             cache_write_index <= 0;
