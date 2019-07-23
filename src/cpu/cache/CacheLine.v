@@ -29,6 +29,7 @@ module CacheLine #(parameter
   reg[TAG_WIDTH - 1:0] tag;
   reg valid;
   reg dirty;
+  (* ram_style = "block" *)
   reg[`DATA_BUS] data[2 ** OFFSET_WIDTH - 1 :0];
 
   assign valid_out = valid;
