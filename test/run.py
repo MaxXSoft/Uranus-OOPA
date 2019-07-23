@@ -2,7 +2,7 @@ import argparse
 import re
 import os
 
-re_modname = re.compile(r'module ([A-Za-z0-9_]+)\(')
+re_modname = re.compile(r'module ([A-Za-z0-9_]+)')
 
 # verilator related command lines
 warn_flags = ' -Wno-UNUSED -Wno-COMBDLY'
