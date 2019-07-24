@@ -52,8 +52,8 @@ module OpGen(
       // R-type 2
       `OP_SPECIAL2: begin
         case (funct_in)
-          `FUNCT_MADD: opgen_out <= `OPGEN_MADD;
-          `FUNCT_MADDU: opgen_out <= `OPGEN_MADDU;
+          `FUNCT_MADD: opgen_out <= `OPGEN_MULT;
+          `FUNCT_MADDU: opgen_out <= `OPGEN_MULTU;
           `FUNCT_MSUB: opgen_out <= `OPGEN_MSUB;
           `FUNCT_MSUBU: opgen_out <= `OPGEN_MSUBU;
           `FUNCT_MUL: opgen_out <= `OPGEN_MUL;
