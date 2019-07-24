@@ -7,6 +7,7 @@
 
 // register count in regfile
 `define RF_COUNT                43
+`define RF_NON_CP0_COUNT        34
 
 // hi & lo register address definitions
 `define HILO_REG_HI             1'b0
