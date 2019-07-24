@@ -22,8 +22,10 @@ module ID_tb(
   wire                id_reg_read_en_2;
   wire[`RF_ADDR_BUS]  id_reg_read_addr_1;
   wire[`RF_ADDR_BUS]  id_reg_read_addr_2;
+  wire                id_reg_write_add;
   wire                id_reg_write_en;
   wire[`RF_ADDR_BUS]  id_reg_write_addr;
+  wire                id_reg_write_lo_en;
   wire                id_is_branch_taken;
   wire[`GHR_BUS]      id_pht_index;
   wire[`ADDR_BUS]     id_inst_branch_target;
@@ -43,8 +45,10 @@ module ID_tb(
   wire[`ADDR_BUS]     id_pc;
 
   // output signals of IDROB
+  wire                idrob_reg_write_add;
   wire                idrob_reg_write_en;
   wire[`RF_ADDR_BUS]  idrob_reg_write_addr;
+  wire                idrob_reg_write_lo_en;
   wire                idrob_is_branch_taken;
   wire[`GHR_BUS]      idrob_pht_index;
   wire[`ADDR_BUS]     idrob_inst_branch_target;
@@ -82,8 +86,10 @@ module ID_tb(
     .reg_read_addr_1          (id_reg_read_addr_1),
     .reg_read_addr_2          (id_reg_read_addr_2),
 
+    .reg_write_add            (id_reg_write_add),
     .reg_write_en             (id_reg_write_en),
     .reg_write_addr           (id_reg_write_addr),
+    .reg_write_lo_en          (id_reg_write_lo_en),
 
     .is_branch_taken_out      (id_is_branch_taken),
     .pht_index_out            (id_pht_index),
@@ -114,8 +120,10 @@ module ID_tb(
     .stall_current_stage      (0),
     .stall_next_stage         (0),
 
+    .reg_write_add_in         (id_reg_write_add),
     .reg_write_en_in          (id_reg_write_en),
     .reg_write_addr_in        (id_reg_write_addr),
+    .reg_write_lo_en_in       (id_reg_write_lo_en),
     .is_branch_taken_in       (id_is_branch_taken),
     .pht_index_in             (id_pht_index),
     .inst_branch_target_in    (id_inst_branch_target),
@@ -134,8 +142,10 @@ module ID_tb(
     .operand_data_2_in        (id_operand_data_2),
     .pc_in                    (id_pc),
 
+    .reg_write_add_out        (idrob_reg_write_add),
     .reg_write_en_out         (idrob_reg_write_en),
     .reg_write_addr_out       (idrob_reg_write_addr),
+    .reg_write_lo_en_out      (idrob_reg_write_lo_en),
     .is_branch_taken_out      (idrob_is_branch_taken),
     .pht_index_out            (idrob_pht_index),
     .inst_branch_target_out   (idrob_inst_branch_target),
@@ -184,11 +194,11 @@ module ID_tb(
         end
         5: begin
           pc    <= 32'hbfc00014;
-          inst  <= 32'h40005005;
+          inst  <= 32'h40006000;
         end
         6: begin
           pc    <= 32'hbfc00018;
-          inst  <= 32'h40805005;
+          inst  <= 32'h40806000;
         end
         7: begin
           pc    <= 32'hbfc0001c;
@@ -200,6 +210,14 @@ module ID_tb(
         end
         9: begin
           pc    <= 32'hbfc00024;
+          inst  <= 32'h0022001a;
+        end
+        10: begin
+          pc    <= 32'hbfc00028;
+          inst  <= 32'h70220004;
+        end
+        11: begin
+          pc    <= 32'hbfc0002c;
           inst  <= 32'hffffffff;
         end
       endcase
@@ -214,13 +232,17 @@ module ID_tb(
         32'hbfc00018: $display(">>>>> MTC0");
         32'hbfc0001c: $display(">>>>> ADDI");
         32'hbfc00020: $display(">>>>> ADDIU");
-        32'hbfc00024: $display(">>>>> invalid instruction");
+        32'hbfc00024: $display(">>>>> DIV");
+        32'hbfc00028: $display(">>>>> MSUB");
+        32'hbfc0002c: $display(">>>>> invalid instruction");
       endcase
     end
 
     $display("regfile writer");
+    `DISPLAY("reg_write_add     ", idrob_reg_write_add);
     `DISPLAY("reg_write_en      ", idrob_reg_write_en);
     `DISPLAY("reg_write_addr    ", idrob_reg_write_addr);
+    `DISPLAY("reg_write_lo_en   ", idrob_reg_write_lo_en);
     $display("branch info (from decoder)");
     `DISPLAY("inst_target       ", idrob_inst_branch_target);
     $display("memory accessing info");
@@ -241,7 +263,7 @@ module ID_tb(
     `DISPLAY("pc                ", idrob_pc);
     $display("");
 
-    `END_AT_TICK(11);
+    `END_AT_TICK(13);
   end
 
 endmodule // ID_tb
