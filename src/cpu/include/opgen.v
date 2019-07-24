@@ -3,7 +3,7 @@
 
 `include "util.v"
 
-`define OPGEN_WIDTH   6
+`define OPGEN_WIDTH   5
 `define OPGEN_BUS     `MAKE_BUS(`OPGEN_WIDTH)
 
 // opcodes
@@ -32,14 +32,12 @@
 `define OPGEN_J       `OPGEN_WIDTH'd22
 `define OPGEN_JR      `OPGEN_WIDTH'd23
 `define OPGEN_MEM     `OPGEN_WIDTH'd24
-`define OPGEN_MADD    `OPGEN_WIDTH'd25
-`define OPGEN_MADDU   `OPGEN_WIDTH'd26
-`define OPGEN_MSUB    `OPGEN_WIDTH'd27
-`define OPGEN_MSUBU   `OPGEN_WIDTH'd28
-`define OPGEN_MUL     `OPGEN_WIDTH'd29
-`define OPGEN_CLZ     `OPGEN_WIDTH'd30
-`define OPGEN_CLO     `OPGEN_WIDTH'd31
-`define OPGEN_MOVZ    `OPGEN_WIDTH'd32
-`define OPGEN_MOVN    `OPGEN_WIDTH'd33
+`define OPGEN_MSUB    `OPGEN_WIDTH'd25
+`define OPGEN_MSUBU   `OPGEN_WIDTH'd26
+`define OPGEN_MUL     `OPGEN_WIDTH'd27
+`define OPGEN_CLZ     `OPGEN_WIDTH'd28
+`define OPGEN_CLO     `OPGEN_WIDTH'd29
+`define OPGEN_MOVZ    `OPGEN_WIDTH'd30
+`define OPGEN_MOVN    `OPGEN_WIDTH'd31
 
 `endif  // OOPA_CPU_INCLUDE_OPGEN_V_
