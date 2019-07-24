@@ -16,10 +16,12 @@ module RegAddrTrans(
   input                   cp0_en,
   input   [`CP0_ADDR_BUS] cp0_addr,
   // output signals
+  output                  rf_en,
   output  [`RF_ADDR_BUS]  rf_addr
 );
 
   reg[`RF_ADDR_BUS]       rf_addr;
+  assign rf_en = reg_en || hilo_en || cp0_en;
 
   always @(*) begin
     if (!rst) begin
