@@ -5,6 +5,7 @@
 `include "opgen.v"
 `include "funct.v"
 `include "regimm.v"
+`include "cp0.v"
 
 module OpGen(
   input                   rst,
@@ -40,10 +41,8 @@ module OpGen(
           `FUNCT_SRAV, `FUNCT_SRA: opgen_out <= `OPGEN_SRA;
           `FUNCT_SRLV, `FUNCT_SRL: opgen_out <= `OPGEN_SRL;
           `FUNCT_JR, `FUNCT_JALR: opgen_out <= `OPGEN_JR;
-          `FUNCT_MFHI: opgen_out <= `OPGEN_MFHI;
-          `FUNCT_MFLO: opgen_out <= `OPGEN_MFLO;
-          `FUNCT_MTHI: opgen_out <= `OPGEN_MTHI;
-          `FUNCT_MTLO: opgen_out <= `OPGEN_MTLO;
+          `FUNCT_MFHI, `FUNCT_MFLO,
+          `FUNCT_MTHI, `FUNCT_MTLO: opgen_out <= `OPGEN_OR;
           `FUNCT_MOVZ: opgen_out <= `OPGEN_MOVZ;
           `FUNCT_MOVN: opgen_out <= `OPGEN_MOVN;
           // SYSCALL, BREAK and other instructions
@@ -74,7 +73,7 @@ module OpGen(
       // co-processor 0
       `OP_CP0: begin
         case (rs)
-          `CP0_MFC0, `CP0_MTC0: opgen_out <= `OPGEN_CP0;
+          `CP0_MFC0, `CP0_MTC0: opgen_out <= `OPGEN_OR;
           // ERET and other instructions
           default: opgen_out <= `OPGEN_NOP;
         endcase
