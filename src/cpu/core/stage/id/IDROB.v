@@ -11,8 +11,10 @@ module IDROB(
   input                   flush,
   input                   stall_current_stage,
   input                   stall_next_stage,
+  input                   reg_write_add_in,
   input                   reg_write_en_in,
   input   [`RF_ADDR_BUS]  reg_write_addr_in,
+  input                   reg_write_lo_en_in,
   input                   is_branch_taken_in,
   input   [`GHR_BUS]      pht_index_in,
   input   [`ADDR_BUS]     inst_branch_target_in,
@@ -30,8 +32,10 @@ module IDROB(
   input   [`DATA_BUS]     operand_data_1_in,
   input   [`DATA_BUS]     operand_data_2_in,
   input   [`ADDR_BUS]     pc_in,
+  output                  reg_write_add_out,
   output                  reg_write_en_out,
   output  [`RF_ADDR_BUS]  reg_write_addr_out,
+  output                  reg_write_lo_en_out,
   output                  is_branch_taken_out,
   output  [`GHR_BUS]      pht_index_out,
   output  [`ADDR_BUS]     inst_branch_target_out,
@@ -51,6 +55,12 @@ module IDROB(
   output  [`ADDR_BUS]     pc_out
 );
 
+  PipelineDeliver #(1) ff_reg_write_add(
+    clk, rst, flush,
+    stall_current_stage, stall_next_stage,
+    reg_write_add_in, reg_write_add_out
+  );
+
   PipelineDeliver #(1) ff_reg_write_en(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
@@ -61,6 +71,12 @@ module IDROB(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     reg_write_addr_in, reg_write_addr_out
+  );
+
+  PipelineDeliver #(1) ff_reg_write_lo_en(
+    clk, rst, flush,
+    stall_current_stage, stall_next_stage,
+    reg_write_lo_en_in, reg_write_lo_en_out
   );
 
   PipelineDeliver #(1) ff_is_branch_taken(

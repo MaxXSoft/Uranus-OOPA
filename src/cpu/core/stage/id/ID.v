@@ -26,8 +26,10 @@ module ID(
   output  [`RF_ADDR_BUS]  reg_read_addr_1,
   output  [`RF_ADDR_BUS]  reg_read_addr_2,
   // regfile writer
+  output                  reg_write_add,
   output                  reg_write_en,
   output  [`RF_ADDR_BUS]  reg_write_addr,
+  output                  reg_write_lo_en,
   // branch info (from predictor)
   output                  is_branch_taken_out,
   output  [`GHR_BUS]      pht_index_out,
@@ -101,8 +103,10 @@ module ID(
     .reg_read_en_2      (reg_read_en_2),
     .reg_read_addr_1    (reg_read_addr_1),
     .reg_read_addr_2    (reg_read_addr_2),
+    .reg_write_add      (reg_write_add),
     .reg_write_en       (reg_write_en),
     .reg_write_addr     (reg_write_addr),
+    .reg_write_lo_en    (reg_write_lo_en),
     .operand_is_ref_1   (operand_is_ref_1),
     .operand_is_ref_2   (operand_is_ref_2),
     .operand_data_1     (operand_data_1),
