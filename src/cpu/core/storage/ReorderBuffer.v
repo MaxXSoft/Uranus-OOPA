@@ -2,6 +2,7 @@
 
 `include "bus.v"
 `include "rob.v"
+`include "regfile.v"
 
 module ReorderBuffer(
   input                   clk,
@@ -11,8 +12,10 @@ module ReorderBuffer(
   output                  can_write,
   output  [`ROB_ADDR_BUS] write_rob_addr_out,
   // write data
+  input                   write_reg_write_add_in,
   input                   write_reg_write_en_in,
-  input   [`REG_ADDR_BUS] write_reg_write_addr_in,
+  input   [`RF_ADDR_BUS]  write_reg_write_addr_in,
+  input                   write_reg_write_lo_en_in,
   input   [`EXC_TYPE_BUS] write_exception_type_in,
   input                   write_is_delayslot_in,
   input   [`ADDR_BUS]     write_pc_in,
@@ -21,14 +24,18 @@ module ReorderBuffer(
   input   [`ROB_ADDR_BUS] update_addr,
   // update data
   input   [`DATA_BUS]     update_reg_write_data_in,
+  input   [`DATA_BUS]     update_reg_write_lo_data_in,
   input   [`EXC_TYPE_BUS] update_exception_type_in,
   // commit channel
   input                   commit_en,
   output                  can_commit,
   // commit data
+  output                  commit_reg_write_add_out,
   output                  commit_reg_write_en_out,
-  output  [`REG_ADDR_BUS] commit_reg_write_addr_out,
+  output  [`RF_ADDR_BUS]  commit_reg_write_addr_out,
   output  [`DATA_BUS]     commit_reg_write_data_out,
+  output                  commit_reg_write_lo_en_out,
+  output  [`DATA_BUS]     commit_reg_write_lo_data_out,
   output  [`EXC_TYPE_BUS] commit_exception_type_out,
   output                  commit_is_delayslot_out,
   output  [`ADDR_BUS]     commit_pc_out,
@@ -38,9 +45,12 @@ module ReorderBuffer(
 );
 
   // output signals
+  reg                 commit_reg_write_add_out;
   reg                 commit_reg_write_en_out;
-  reg[`REG_ADDR_BUS]  commit_reg_write_addr_out;
+  reg[`RF_ADDR_BUS]   commit_reg_write_addr_out;
   reg[`DATA_BUS]      commit_reg_write_data_out;
+  reg                 commit_reg_write_lo_en_out;
+  reg[`DATA_BUS]      commit_reg_write_lo_data_out;
   reg[`EXC_TYPE_BUS]  commit_exception_type_out;
   reg                 commit_is_delayslot_out;
   reg[`ADDR_BUS]      commit_pc_out;
@@ -49,9 +59,12 @@ module ReorderBuffer(
   wire                line_write_en[`ROB_SIZE - 1:0];
   wire                line_update_en[`ROB_SIZE - 1:0];
   wire                robl_done[`ROB_SIZE - 1:0];
+  wire                robl_reg_write_add[`ROB_SIZE - 1:0];
   wire                robl_reg_write_en[`ROB_SIZE - 1:0];
-  wire[`REG_ADDR_BUS] robl_reg_write_addr[`ROB_SIZE - 1:0];
+  wire[`RF_ADDR_BUS]  robl_reg_write_addr[`ROB_SIZE - 1:0];
   wire[`DATA_BUS]     robl_reg_write_data[`ROB_SIZE - 1:0];
+  wire                robl_reg_write_lo_en[`ROB_SIZE - 1:0];
+  wire[`DATA_BUS]     robl_reg_write_lo_data[`ROB_SIZE - 1:0];
   wire[`EXC_TYPE_BUS] robl_exception_type[`ROB_SIZE - 1:0];
   wire                robl_is_delayslot[`ROB_SIZE - 1:0];
   wire[`ADDR_BUS]     robl_pc[`ROB_SIZE - 1:0];
@@ -63,19 +76,28 @@ module ReorderBuffer(
       ROBLine line(
         .clk                          (clk),
         .rst                          (rst),
+
         .write_en                     (line_write_en[i]),
+        .write_reg_write_add_in       (write_reg_write_add_in),
         .write_reg_write_en_in        (write_reg_write_en_in),
         .write_reg_write_addr_in      (write_reg_write_addr_in),
+        .write_reg_write_lo_en_in     (write_reg_write_lo_en_in),
         .write_exception_type_in      (write_exception_type_in),
         .write_is_delayslot_in        (write_is_delayslot_in),
         .write_pc_in                  (write_pc_in),
+
         .update_en                    (line_update_en[i]),
         .update_reg_write_data_in     (update_reg_write_data_in),
+        .update_reg_write_lo_data_in  (update_reg_write_lo_data_in),
         .update_exception_type_in     (update_exception_type_in),
+
         .done_out                     (robl_done[i]),
+        .reg_write_add_out            (robl_reg_write_add[i]),
         .reg_write_en_out             (robl_reg_write_en[i]),
         .reg_write_addr_out           (robl_reg_write_addr[i]),
         .reg_write_data_out           (robl_reg_write_data[i]),
+        .reg_write_lo_en_out          (robl_reg_write_lo_en[i]),
+        .reg_write_lo_data_out        (robl_reg_write_lo_data[i]),
         .exception_type_out           (robl_exception_type[i]),
         .is_delayslot_out             (robl_is_delayslot[i]),
         .pc_out                       (robl_pc[i])
@@ -119,25 +141,32 @@ module ReorderBuffer(
   // generate output signals of commit channel
   always @(*) begin
     if (!rst) begin
+      commit_reg_write_add_out <= 0;
       commit_reg_write_en_out <= 0;
       commit_reg_write_addr_out <= 0;
       commit_reg_write_data_out <= 0;
+      commit_reg_write_lo_en_out <= 0;
+      commit_reg_write_lo_data_out <= 0;
       commit_exception_type_out <= 0;
       commit_is_delayslot_out <= 0;
       commit_pc_out <= 0;
     end
     else begin
+      commit_reg_write_add_out <= robl_reg_write_add[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       commit_reg_write_en_out <= robl_reg_write_en[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       commit_reg_write_addr_out <= robl_reg_write_addr[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+      commit_reg_write_lo_en_out <= robl_reg_write_lo_en[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       commit_is_delayslot_out <= robl_is_delayslot[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       commit_pc_out <= robl_pc[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       if (update_en && head_ptr[`ROB_ADDR_WIDTH - 1:0] == update_addr) begin
         // data forwarding
         commit_reg_write_data_out <= update_reg_write_data_in;
+        commit_reg_write_lo_data_out <= update_reg_write_lo_data_in;
         commit_exception_type_out <= update_exception_type_in;
       end
       else begin
         commit_reg_write_data_out <= robl_reg_write_data[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
+        commit_reg_write_lo_data_out <= robl_reg_write_lo_data[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
         commit_exception_type_out <= robl_exception_type[head_ptr[`ROB_ADDR_WIDTH - 1:0]];
       end
     end
