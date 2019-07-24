@@ -93,10 +93,10 @@ module ExceptGen(
           end
           `OP_SPECIAL2: begin
             case (funct)
-              `FUNCT2_CLZ, `FUNCT2_CLO,
-              `FUNCT2_MUL,
-              `FUNCT2_MADD, `FUNCT2_MADDU,
-              `FUNCT2_MSUB, `FUNCT2_MSUBU: begin
+              `FUNCT_CLZ, `FUNCT_CLO,
+              `FUNCT_MUL,
+              `FUNCT_MADD, `FUNCT_MADDU,
+              `FUNCT_MSUB, `FUNCT_MSUBU: begin
                 invalid_inst_flag <= 0;
                 overflow_inst_flag <= 0;
                 syscall_flag <= 0;
