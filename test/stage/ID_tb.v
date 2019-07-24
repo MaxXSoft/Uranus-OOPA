@@ -4,6 +4,7 @@
 `include "bus.v"
 `include "branch.v"
 `include "opgen.v"
+`include "regfile.v"
 
 module ID_tb(
   input clk,
@@ -19,10 +20,10 @@ module ID_tb(
   // output signals of ID
   wire                id_reg_read_en_1;
   wire                id_reg_read_en_2;
-  wire[`REG_ADDR_BUS] id_reg_read_addr_1;
-  wire[`REG_ADDR_BUS] id_reg_read_addr_2;
+  wire[`RF_ADDR_BUS]  id_reg_read_addr_1;
+  wire[`RF_ADDR_BUS]  id_reg_read_addr_2;
   wire                id_reg_write_en;
-  wire[`REG_ADDR_BUS] id_reg_write_addr;
+  wire[`RF_ADDR_BUS]  id_reg_write_addr;
   wire                id_is_branch_taken;
   wire[`GHR_BUS]      id_pht_index;
   wire[`ADDR_BUS]     id_inst_branch_target;
@@ -31,9 +32,6 @@ module ID_tb(
   wire                id_mem_sign_ext_flag;
   wire[3:0]           id_mem_sel;
   wire[`DATA_BUS]     id_mem_offset;
-  wire                id_cp0_read_flag;
-  wire                id_cp0_write_flag;
-  wire[`CP0_ADDR_BUS] id_cp0_addr;
   wire[`EXC_TYPE_BUS] id_exception_type;
   wire                id_is_next_delayslot;
   wire                id_is_delayslot;
@@ -46,7 +44,7 @@ module ID_tb(
 
   // output signals of IDROB
   wire                idrob_reg_write_en;
-  wire[`REG_ADDR_BUS] idrob_reg_write_addr;
+  wire[`RF_ADDR_BUS]  idrob_reg_write_addr;
   wire                idrob_is_branch_taken;
   wire[`GHR_BUS]      idrob_pht_index;
   wire[`ADDR_BUS]     idrob_inst_branch_target;
@@ -55,9 +53,6 @@ module ID_tb(
   wire                idrob_mem_sign_ext_flag;
   wire[3:0]           idrob_mem_sel;
   wire[`DATA_BUS]     idrob_mem_offset;
-  wire                idrob_cp0_read_flag;
-  wire                idrob_cp0_write_flag;
-  wire[`CP0_ADDR_BUS] idrob_cp0_addr;
   wire[`EXC_TYPE_BUS] idrob_exception_type;
   wire                idrob_is_current_delayslot;
   wire                idrob_is_delayslot;
@@ -100,10 +95,6 @@ module ID_tb(
     .mem_sel                  (id_mem_sel),
     .mem_offset               (id_mem_offset),
 
-    .cp0_read_flag            (id_cp0_read_flag),
-    .cp0_write_flag           (id_cp0_write_flag),
-    .cp0_addr                 (id_cp0_addr),
-
     .exception_type           (id_exception_type),
     .is_next_delayslot        (id_is_next_delayslot),
     .is_delayslot             (id_is_delayslot),
@@ -133,9 +124,6 @@ module ID_tb(
     .mem_sign_ext_flag_in     (id_mem_sign_ext_flag),
     .mem_sel_in               (id_mem_sel),
     .mem_offset_in            (id_mem_offset),
-    .cp0_read_flag_in         (id_cp0_read_flag),
-    .cp0_write_flag_in        (id_cp0_write_flag),
-    .cp0_addr_in              (id_cp0_addr),
     .exception_type_in        (id_exception_type),
     .is_next_delayslot_in     (id_is_next_delayslot),
     .is_delayslot_in          (id_is_delayslot),
@@ -156,9 +144,6 @@ module ID_tb(
     .mem_sign_ext_flag_out    (idrob_mem_sign_ext_flag),
     .mem_sel_out              (idrob_mem_sel),
     .mem_offset_out           (idrob_mem_offset),
-    .cp0_read_flag_out        (idrob_cp0_read_flag),
-    .cp0_write_flag_out       (idrob_cp0_write_flag),
-    .cp0_addr_out             (idrob_cp0_addr),
     .exception_type_out       (idrob_exception_type),
     .is_current_delayslot_out (idrob_is_current_delayslot),
     .is_delayslot_out         (idrob_is_delayslot),
@@ -231,7 +216,6 @@ module ID_tb(
         32'hbfc00020: $display(">>>>> ADDIU");
         32'hbfc00024: $display(">>>>> invalid instruction");
       endcase
-
     end
 
     $display("regfile writer");
@@ -245,10 +229,6 @@ module ID_tb(
     `DISPLAY("mem_sign_ext_flag ", idrob_mem_sign_ext_flag);
     `DISPLAY("mem_sel           ", idrob_mem_sel);
     `DISPLAY("mem_offset        ", idrob_mem_offset);
-    $display("CP0 info");
-    `DISPLAY("cp0_read_flag     ", idrob_cp0_read_flag);
-    `DISPLAY("cp0_write_flag    ", idrob_cp0_write_flag);
-    `DISPLAY("cp0_addr          ", idrob_cp0_addr);
     $display("exception info");
     `DISPLAY("exception_type    ", idrob_exception_type);
     `DISPLAY("is_delayslot      ", idrob_is_delayslot);
