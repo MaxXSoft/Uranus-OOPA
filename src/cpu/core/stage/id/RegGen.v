@@ -28,8 +28,10 @@ module RegGen(
   output                    reg_read_en_2,
   output  [`RF_ADDR_BUS]    reg_read_addr_1,
   output  [`RF_ADDR_BUS]    reg_read_addr_2,
+  output                    reg_write_add,
   output                    reg_write_en,
   output  [`RF_ADDR_BUS]    reg_write_addr,
+  output                    reg_write_lo_en,
   // operands output
   output                    operand_is_ref_1,
   output                    operand_is_ref_2,
@@ -294,6 +296,10 @@ module RegGen(
   reg write_hilo_en, write_hilo_addr;
   reg write_cp0_en;
   reg[`CP0_ADDR_BUS] write_cp0_addr;
+  reg write_reg_add, write_reg_lo_en;
+
+  assign reg_write_add = write_reg_add;
+  assign reg_write_lo_en = write_reg_lo_en;
 
   RegAddrTrans reg_addr_trans_write(
     .rst        (rst),
@@ -316,6 +322,8 @@ module RegGen(
       write_hilo_addr <= 0;
       write_cp0_en <= 0;
       write_cp0_addr <= 0;
+      write_reg_add <= 0;
+      write_reg_lo_en <= 0;
     end
     else begin
       case (op)
@@ -328,6 +336,8 @@ module RegGen(
           write_hilo_addr <= 0;
           write_cp0_en <= 0;
           write_cp0_addr <= 0;
+          write_reg_add <= 0;
+          write_reg_lo_en <= 0;
         end
         `OP_SPECIAL: begin
           case (funct)
@@ -338,6 +348,8 @@ module RegGen(
               write_hilo_addr <= `HILO_REG_HI;
               write_cp0_en <= 0;
               write_cp0_addr <= 0;
+              write_reg_add <= 0;
+              write_reg_lo_en <= 0;
             end
             `FUNCT_MTLO: begin
               write_reg_en <= 0;
@@ -346,6 +358,18 @@ module RegGen(
               write_hilo_addr <= `HILO_REG_LO;
               write_cp0_en <= 0;
               write_cp0_addr <= 0;
+              write_reg_add <= 0;
+              write_reg_lo_en <= 0;
+            end
+            `FUNCT_MULT, `FUNCT_MULTU, `FUNCT_DIV, `FUNCT_DIVU: begin
+              write_reg_en <= 0;
+              write_reg_addr <= 0;
+              write_hilo_en <= 1;
+              write_hilo_addr <= `HILO_REG_HI;
+              write_cp0_en <= 0;
+              write_cp0_addr <= 0;
+              write_reg_add <= 0;
+              write_reg_lo_en <= 1;
             end
             default: begin
               write_reg_en <= 1;
@@ -354,16 +378,34 @@ module RegGen(
               write_hilo_addr <= 0;
               write_cp0_en <= 0;
               write_cp0_addr <= 0;
+              write_reg_add <= 0;
+              write_reg_lo_en <= 0;
             end
           endcase
         end
         `OP_SPECIAL2: begin
-          write_reg_en <= 1;
-          write_reg_addr <= rd;
-          write_hilo_en <= 0;
-          write_hilo_addr <= 0;
-          write_cp0_en <= 0;
-          write_cp0_addr <= 0;
+          case (funct)
+            `FUNCT_MADD, `FUNCT_MADDU, `FUNCT_MSUB, `FUNCT_MSUBU: begin
+              write_reg_en <= 0;
+              write_reg_addr <= 0;
+              write_hilo_en <= 1;
+              write_hilo_addr <= `HILO_REG_HI;
+              write_cp0_en <= 0;
+              write_cp0_addr <= 0;
+              write_reg_add <= 1;
+              write_reg_lo_en <= 1;
+            end
+            default: begin
+              write_reg_en <= 1;
+              write_reg_addr <= rd;
+              write_hilo_en <= 0;
+              write_hilo_addr <= 0;
+              write_cp0_en <= 0;
+              write_cp0_addr <= 0;
+              write_reg_add <= 0;
+              write_reg_lo_en <= 0;
+            end
+          endcase
         end
         `OP_JAL: begin
           write_reg_en <= 1;
@@ -372,6 +414,8 @@ module RegGen(
           write_hilo_addr <= 0;
           write_cp0_en <= 0;
           write_cp0_addr <= 0;
+          write_reg_add <= 0;
+          write_reg_lo_en <= 0;
         end
         `OP_REGIMM: begin
           case (rt)
@@ -382,6 +426,8 @@ module RegGen(
               write_hilo_addr <= 0;
               write_cp0_en <= 0;
               write_cp0_addr <= 0;
+              write_reg_add <= 0;
+              write_reg_lo_en <= 0;
             end
             default: begin
               write_reg_en <= 0;
@@ -390,6 +436,8 @@ module RegGen(
               write_hilo_addr <= 0;
               write_cp0_en <= 0;
               write_cp0_addr <= 0;
+              write_reg_add <= 0;
+              write_reg_lo_en <= 0;
             end
           endcase
         end
@@ -400,6 +448,8 @@ module RegGen(
           write_hilo_addr <= 0;
           write_cp0_en <= 0;
           write_cp0_addr <= 0;
+          write_reg_add <= 0;
+          write_reg_lo_en <= 0;
         end
         `OP_CP0: begin
           if (rs == `CP0_MFC0 && is_cp0) begin
@@ -409,6 +459,8 @@ module RegGen(
             write_hilo_addr <= 0;
             write_cp0_en <= 0;
             write_cp0_addr <= 0;
+            write_reg_add <= 0;
+            write_reg_lo_en <= 0;
           end
           else if (rs == `CP0_MTC0 && is_cp0) begin
             write_reg_en <= 0;
@@ -417,6 +469,8 @@ module RegGen(
             write_hilo_addr <= 0;
             write_cp0_en <= 1;
             write_cp0_addr <= {rd, sel};
+            write_reg_add <= 0;
+            write_reg_lo_en <= 0;
           end
           else begin
             write_reg_en <= 0;
@@ -425,6 +479,8 @@ module RegGen(
             write_hilo_addr <= 0;
             write_cp0_en <= 0;
             write_cp0_addr <= 0;
+            write_reg_add <= 0;
+            write_reg_lo_en <= 0;
           end
         end
         default: begin
@@ -434,6 +490,8 @@ module RegGen(
           write_hilo_addr <= 0;
           write_cp0_en <= 0;
           write_cp0_addr <= 0;
+          write_reg_add <= 0;
+          write_reg_lo_en <= 0;
         end
       endcase
     end
