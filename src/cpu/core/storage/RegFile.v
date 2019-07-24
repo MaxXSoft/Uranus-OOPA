@@ -12,15 +12,22 @@
 module RegFile(
   input                   clk,
   input                   rst,
-  // write channel
+  // write channel #1
   input                   write_en,
   input   [`RF_ADDR_BUS]  write_addr,
   input   [`ROB_ADDR_BUS] write_ref_id,
-  // commit channel
-  input                   commit_en,
+  // write channel #2
+  input                   write_lo_en,
+  input   [`ROB_ADDR_BUS] write_lo_ref_id,
+  // commit channel #1
   input                   commit_restore,
+  input                   commit_add,
+  input                   commit_en,
   input   [`RF_ADDR_BUS]  commit_addr,
   input   [`DATA_BUS]     commit_data,
+  // commit channel #2
+  input                   commit_lo_en,
+  input   [`DATA_BUS]     commit_lo_data,
   // read channel (x2)
   input                   read_en_1,
   input                   read_en_2,
@@ -70,11 +77,19 @@ module RegFile(
       end
     end
     else begin
+      // write channel #1
       if (write_en) begin
         is_ref[write_addr] <= 1;
       end
       if (commit_en && !(write_en && commit_addr == write_addr)) begin
         is_ref[commit_addr] <= 0;
+      end
+      // write channel #2
+      if (write_lo_en) begin
+        is_ref[`RF_REG_LO] <= 1;
+      end
+      if (commit_lo_en && !write_lo_en) begin
+        is_ref[`RF_REG_LO] <= 0;
       end
     end
   end
@@ -163,7 +178,7 @@ module RegFile(
         default:;
       endcase
 
-      // write to regfile
+      // write channel #1
       if (commit_en && |commit_addr) begin
         case (commit_addr)
           `RF_REG_COMPARE: begin
@@ -183,9 +198,24 @@ module RegFile(
             reg_val[`RF_REG_CAUSE][9:8] <= commit_data[9:8];
           end
           default: begin
-            reg_val[commit_addr] <= commit_data;
+            if (commit_add) begin
+              reg_val[commit_addr] <= reg_val[commit_addr] + commit_data;
+            end
+            else begin
+              reg_val[commit_addr] <= commit_data;
+            end
           end
         endcase
+      end
+
+      // write channel
+      if (commit_lo_en) begin
+        if (commit_add) begin
+          reg_val[`RF_REG_LO] <= reg_val[`RF_REG_LO] + commit_lo_data;
+        end
+        else begin
+          reg_val[`RF_REG_LO] <= commit_lo_data;
+        end
       end
     end
   end
@@ -198,12 +228,17 @@ module RegFile(
         ref_id[i] <= 0;
       end
     end
-    else if (write_en && |write_addr) begin
-      ref_id[write_addr] <= write_ref_id;
+    else begin
+      if (write_en && |write_addr) begin
+        ref_id[write_addr] <= write_ref_id;
+      end
+      if (write_lo_en) begin
+        ref_id[`RF_REG_LO] <= write_lo_ref_id;
+      end
     end
   end
 
-  // read channel 1
+  // read channel #1
   reg read_is_ref_1;
   reg[`DATA_BUS] read_data_1;
 
@@ -226,10 +261,33 @@ module RegFile(
           write_ref_id
         };
       end
+      else if (write_lo_en && read_addr_1 == `RF_REG_LO) begin
+        // data forwarding
+        read_is_ref_1 <= 1;
+        read_data_1 <= {
+          {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
+          write_lo_ref_id
+        };
+      end
       else if (commit_en && read_addr_1 == commit_addr) begin
         // data forwarding
-        read_is_ref_2 <= 0;
-        read_data_2 <= commit_data;
+        read_is_ref_1 <= 0;
+        if (commit_add) begin
+          read_data_1 <= reg_val[commit_addr] + commit_data;
+        end
+        else begin
+          read_data_1 <= commit_data;
+        end
+      end
+      else if (commit_lo_en && read_addr_1 == `RF_REG_LO) begin
+        // data forwarding
+        read_is_ref_1 <= 0;
+        if (commit_add) begin
+          read_data_1 <= reg_val[`RF_REG_LO] + commit_lo_data;
+        end
+        else begin
+          read_data_1 <= commit_lo_data;
+        end
       end
       else begin
         read_is_ref_1 <= is_ref[read_addr_1];
@@ -250,7 +308,7 @@ module RegFile(
     end
   end
 
-  // read channel 2
+  // read channel #2
   reg read_is_ref_2;
   reg[`DATA_BUS] read_data_2;
 
@@ -273,10 +331,33 @@ module RegFile(
           write_ref_id
         };
       end
+      else if (write_lo_en && read_addr_2 == `RF_REG_LO) begin
+        // data forwarding
+        read_is_ref_2 <= 1;
+        read_data_2 <= {
+          {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
+          write_lo_ref_id
+        };
+      end
       else if (commit_en && read_addr_2 == commit_addr) begin
         // data forwarding
         read_is_ref_2 <= 0;
-        read_data_2 <= commit_data;
+        if (commit_add) begin
+          read_data_2 <= reg_val[commit_addr] + commit_data;
+        end
+        else begin
+          read_data_2 <= commit_data;
+        end
+      end
+      else if (commit_lo_en && read_addr_2 == `RF_REG_LO) begin
+        // data forwarding
+        read_is_ref_2 <= 0;
+        if (commit_add) begin
+          read_data_2 <= reg_val[`RF_REG_LO] + commit_lo_data;
+        end
+        else begin
+          read_data_2 <= commit_lo_data;
+        end
       end
       else begin
         read_is_ref_2 <= is_ref[read_addr_2];
