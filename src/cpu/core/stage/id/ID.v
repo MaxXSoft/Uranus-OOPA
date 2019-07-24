@@ -5,6 +5,7 @@
 `include "opgen.v"
 `include "segpos.v"
 `include "cp0.v"
+`include "regfile.v"
 
 module ID(
   input                   rst,
@@ -22,11 +23,11 @@ module ID(
   input   [`DATA_BUS]     reg_read_data_2,
   output                  reg_read_en_1,
   output                  reg_read_en_2,
-  output  [`REG_ADDR_BUS] reg_read_addr_1,
-  output  [`REG_ADDR_BUS] reg_read_addr_2,
+  output  [`RF_ADDR_BUS]  reg_read_addr_1,
+  output  [`RF_ADDR_BUS]  reg_read_addr_2,
   // regfile writer
   output                  reg_write_en,
-  output  [`REG_ADDR_BUS] reg_write_addr,
+  output  [`RF_ADDR_BUS]  reg_write_addr,
   // branch info (from predictor)
   output                  is_branch_taken_out,
   output  [`GHR_BUS]      pht_index_out,
@@ -38,10 +39,6 @@ module ID(
   output                  mem_sign_ext_flag,
   output  [3:0]           mem_sel,
   output  [`DATA_BUS]     mem_offset,
-  // CP0 info
-  output                  cp0_read_flag,
-  output                  cp0_write_flag,
-  output  [`CP0_ADDR_BUS] cp0_addr,
   // exception info
   output  [`EXC_TYPE_BUS] exception_type,
   output                  is_next_delayslot,
@@ -94,6 +91,7 @@ module ID(
     .shamt              (inst_shamt),
     .funct              (inst_funct),
     .imm                (inst_imm),
+    .sel                (inst_sel),
     .is_cp0             (inst_is_cp0),
     .reg_read_is_ref_1  (reg_read_is_ref_1),
     .reg_read_is_ref_2  (reg_read_is_ref_2),
@@ -133,19 +131,6 @@ module ID(
     .mem_sign_ext_flag  (mem_sign_ext_flag),
     .mem_sel            (mem_sel),
     .mem_offset         (mem_offset)
-  );
-
-  // generate CP0 information
-  CP0Gen cp0_gen(
-    .rst                (rst),
-    .op                 (inst_op),
-    .rs                 (inst_rs),
-    .rd                 (inst_rd),
-    .sel                (inst_sel),
-    .is_cp0             (inst_is_cp0),
-    .cp0_read_flag      (cp0_read_flag),
-    .cp0_write_flag     (cp0_write_flag),
-    .cp0_addr           (cp0_addr)
   );
 
   // generate exception information
