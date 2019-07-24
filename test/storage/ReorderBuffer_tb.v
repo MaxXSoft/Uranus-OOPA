@@ -3,6 +3,7 @@
 `include "tb.v"
 `include "bus.v"
 `include "rob.v"
+`include "regfile.v"
 
 module ReorderBuffer_tb(
   input clk,
@@ -24,9 +25,12 @@ module ReorderBuffer_tb(
   wire                can_write;
   wire[`ROB_ADDR_BUS] write_rob_addr_out;
   wire                can_commit;
+  wire                commit_reg_write_add_out;
   wire                commit_reg_write_en_out;
-  wire[`REG_ADDR_BUS] commit_reg_write_addr_out;
+  wire[`RF_ADDR_BUS]  commit_reg_write_addr_out;
   wire[`DATA_BUS]     commit_reg_write_data_out;
+  wire                commit_reg_write_lo_en_out;
+  wire[`DATA_BUS]     commit_reg_write_lo_data_out;
   wire[`EXC_TYPE_BUS] commit_exception_type_out;
   wire                commit_is_delayslot_out;
   wire[`ADDR_BUS]     commit_pc_out;
@@ -38,8 +42,10 @@ module ReorderBuffer_tb(
     .write_en                     (write_en),
     .can_write                    (can_write),
     .write_rob_addr_out           (write_rob_addr_out),
+    .write_reg_write_add_in       (0),
     .write_reg_write_en_in        (0),
     .write_reg_write_addr_in      (0),
+    .write_reg_write_lo_en_in     (0),
     .write_exception_type_in      (0),
     .write_is_delayslot_in        (0),
     .write_pc_in                  (pc),
@@ -47,13 +53,17 @@ module ReorderBuffer_tb(
     .update_en                    (update_en),
     .update_addr                  (update_addr),
     .update_reg_write_data_in     (0),
+    .update_reg_write_lo_data_in  (0),
     .update_exception_type_in     (0),
 
     .commit_en                    (commit_en),
     .can_commit                   (can_commit),
+    .commit_reg_write_add_out     (commit_reg_write_add_out),
     .commit_reg_write_en_out      (commit_reg_write_en_out),
     .commit_reg_write_addr_out    (commit_reg_write_addr_out),
     .commit_reg_write_data_out    (commit_reg_write_data_out),
+    .commit_reg_write_lo_en_out   (commit_reg_write_lo_en_out),
+    .commit_reg_write_lo_data_out (commit_reg_write_lo_data_out),
     .commit_exception_type_out    (commit_exception_type_out),
     .commit_is_delayslot_out      (commit_is_delayslot_out),
     .commit_pc_out                (commit_pc_out),
