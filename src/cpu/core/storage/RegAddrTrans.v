@@ -5,7 +5,7 @@
 `include "cp0.v"
 
 module RegAddrTrans(
-  input rst,
+  input                   rst,
   // regfile
   input                   reg_en,
   input   [`REG_ADDR_BUS] reg_addr,
