@@ -2,42 +2,70 @@
 
 `include "bus.v"
 `include "rob.v"
+`include "regfile.v"
+`include "exception.v"
+`include "cp0.v"
+
+// Register File
+// including all resigters of MIPS ISA (general, hi/lo, cp0...)
 
 module RegFile(
   input                   clk,
   input                   rst,
   // write channel
   input                   write_en,
-  input   [`REG_ADDR_BUS] write_addr,
+  input   [`RF_ADDR_BUS]  write_addr,
   input   [`ROB_ADDR_BUS] write_ref_id,
   // commit channel
   input                   commit_en,
   input                   commit_restore,
-  input   [`REG_ADDR_BUS] commit_addr,
+  input   [`RF_ADDR_BUS]  commit_addr,
   input   [`DATA_BUS]     commit_data,
   // read channel (x2)
   input                   read_en_1,
   input                   read_en_2,
-  input   [`REG_ADDR_BUS] read_addr_1,
-  input   [`REG_ADDR_BUS] read_addr_2,
+  input   [`RF_ADDR_BUS]  read_addr_1,
+  input   [`RF_ADDR_BUS]  read_addr_2,
   output                  read_is_ref_1,
   output                  read_is_ref_2,
   output  [`DATA_BUS]     read_data_1,
-  output  [`DATA_BUS]     read_data_2
+  output  [`DATA_BUS]     read_data_2,
+  // CP0 exception channel
+  input   [4:0]           hard_int,
+  input   [`ADDR_BUS]     badvaddr_data,
+  input   [`EXC_TYPE_BUS] exception_type,
+  input                   is_delayslot,
+  input   [`ADDR_BUS]     current_pc,
+  // CP0 output channel
+  output  [`DATA_BUS]     cp0_status,
+  output  [`DATA_BUS]     cp0_cause,
+  output  [`DATA_BUS]     cp0_epc,
+  output  [`DATA_BUS]     cp0_ebase
 );
 
   // indicate whether current register stores RS/ROB id
-  reg is_ref[31:0];
+  reg                 is_ref[`RF_COUNT - 1:0];
   // stores register value
-  reg[`DATA_BUS] reg_val[31:0];
+  reg[`DATA_BUS]      reg_val[`RF_COUNT - 1:0];
   // stores RS/ROB id
-  reg[`ROB_ADDR_BUS] ref_id[31:0];
+  reg[`ROB_ADDR_BUS]  ref_id[`RF_COUNT - 1:0];
+  // CP0 timer interrupt
+  reg                 timer_int;
+
+  // generate CP0 output
+  assign cp0_status = reg_val[`RF_REG_STATUS];
+  assign cp0_cause  = reg_val[`RF_REG_CAUSE];
+  assign cp0_epc    = reg_val[`RF_REG_EPC];
+  assign cp0_ebase  = reg_val[`RF_REG_EBASE];
+
+  // exception PC
+  wire[`DATA_BUS] exc_epc = is_delayslot ? current_pc - 4 : current_pc;
 
   // update 'is_ref'
   always @(posedge clk) begin
     if (!rst || commit_restore) begin
       integer i;
-      for (i = 0; i < 32; i = i + 1) begin
+      for (i = 0; i < `RF_COUNT; i = i + 1) begin
         is_ref[i] <= 0;
       end
     end
@@ -54,13 +82,111 @@ module RegFile(
   // update 'reg_val'
   always @(posedge clk) begin
     if (!rst) begin
+      // initialize all non-CP0 registers
       integer i;
-      for (i = 0; i < 32; i = i + 1) begin
+      for (i = 0; i < `RF_NON_CP0_COUNT; i = i + 1) begin
         reg_val[i] <= 0;
       end
+      // initialize CP0 registers separately
+      reg_val[`RF_REG_BADVADDR] <= `CP0_REG_BADVADDR_VALUE;
+      reg_val[`RF_REG_COUNT] <= 0;
+      reg_val[`RF_REG_COMPARE] <= 0;
+      reg_val[`RF_REG_STATUS] <= `CP0_REG_STATUS_VALUE;
+      reg_val[`RF_REG_CAUSE] <= `CP0_REG_CAUSE_VALUE;
+      reg_val[`RF_REG_EPC] <= `CP0_REG_EPC_VALUE;
+      reg_val[`RF_REG_PRID] <= `CP0_REG_PRID_VALUE;
+      reg_val[`RF_REG_EBASE] <= `CP0_REG_EBASE_VALUE;
+      reg_val[`RF_REG_CONFIG] <= `CP0_REG_CONFIG_VALUE;
+      // initialize timer interrupt flag
+      timer_int <= 0;
     end
-    else if (commit_en && |commit_addr) begin
-      reg_val[commit_addr] <= commit_data;
+    else begin
+      // store the status of hardware interrupts
+      reg_val[`RF_REG_CAUSE][`CP0_SEG_HWI] <= {timer_int, hard_int};
+
+      // generate the timer interrupt
+      reg_val[`RF_REG_COUNT] <= reg_val[`RF_REG_COUNT] + 1;
+      if (|reg_val[`RF_REG_COMPARE] &&
+          reg_val[`RF_REG_COUNT] == reg_val[`RF_REG_COMPARE]) begin
+        timer_int <= 1;
+      end
+
+      // write data by exception info
+      case (exception_type[`EXC_TYPE_POS_INT])
+        `EXC_TYPE_INT: begin
+          reg_val[`RF_REG_EPC] <= exc_epc;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_BD] <= is_delayslot;
+          reg_val[`RF_REG_STATUS][`CP0_SEG_EXL] <= 1;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_EXCCODE] <= `CP0_EXCCODE_INT;
+        end
+        `EXC_TYPE_IF, `EXC_TYPE_ADEL: begin
+          reg_val[`RF_REG_EPC] <= exc_epc;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_BD] <= is_delayslot;
+          reg_val[`RF_REG_BADVADDR] <= badvaddr_data;
+          reg_val[`RF_REG_STATUS][`CP0_SEG_EXL] <= 1;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_EXCCODE] <= `CP0_EXCCODE_ADEL;
+        end
+        `EXC_TYPE_RI: begin
+          reg_val[`RF_REG_EPC] <= exc_epc;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_BD] <= is_delayslot;
+          reg_val[`RF_REG_STATUS][`CP0_SEG_EXL] <= 1;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_EXCCODE] <= `CP0_EXCCODE_RI;
+        end
+        `EXC_TYPE_OV: begin
+          reg_val[`RF_REG_EPC] <= exc_epc;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_BD] <= is_delayslot;
+          reg_val[`RF_REG_STATUS][`CP0_SEG_EXL] <= 1;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_EXCCODE] <= `CP0_EXCCODE_OV;
+        end
+        `EXC_TYPE_BP: begin
+          reg_val[`RF_REG_EPC] <= exc_epc;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_BD] <= is_delayslot;
+          reg_val[`RF_REG_STATUS][`CP0_SEG_EXL] <= 1;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_EXCCODE] <= `CP0_EXCCODE_BP;
+        end
+        `EXC_TYPE_SYS: begin
+          reg_val[`RF_REG_EPC] <= exc_epc;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_BD] <= is_delayslot;
+          reg_val[`RF_REG_STATUS][`CP0_SEG_EXL] <= 1;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_EXCCODE] <= `CP0_EXCCODE_SYS;
+        end
+        `EXC_TYPE_ADES: begin
+          reg_val[`RF_REG_EPC] <= exc_epc;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_BD] <= is_delayslot;
+          reg_val[`RF_REG_BADVADDR] <= badvaddr_data;
+          reg_val[`RF_REG_STATUS][`CP0_SEG_EXL] <= 1;
+          reg_val[`RF_REG_CAUSE][`CP0_SEG_EXCCODE] <= `CP0_EXCCODE_ADES;
+        end
+        `EXC_TYPE_ERET: begin
+          reg_val[`RF_REG_STATUS][`CP0_SEG_EXL] <= 0;
+        end
+        default:;
+      endcase
+
+      // write to regfile
+      if (commit_en && |commit_addr) begin
+        case (commit_addr)
+          `RF_REG_COMPARE: begin
+            reg_val[`RF_REG_COMPARE] <= commit_data;
+            timer_int <= 0;
+          end
+          `RF_REG_STATUS: begin
+            // allow writing BEV
+            reg_val[`RF_REG_STATUS][22] <= commit_data[22];
+            reg_val[`RF_REG_STATUS][15:8] <= commit_data[15:8];
+            reg_val[`RF_REG_STATUS][1:0] <= commit_data[1:0];
+          end
+          `RF_REG_EBASE: begin
+            reg_val[`RF_REG_EBASE][29:12] <= commit_data[29:12];
+          end
+          `RF_REG_CAUSE: begin
+            reg_val[`RF_REG_CAUSE][9:8] <= commit_data[9:8];
+          end
+          default: begin
+            reg_val[commit_addr] <= commit_data;
+          end
+        endcase
+      end
     end
   end
 
@@ -68,7 +194,7 @@ module RegFile(
   always @(posedge clk) begin
     if (!rst) begin
       integer i;
-      for (i = 0; i < 32; i = i + 1) begin
+      for (i = 0; i < `RF_COUNT; i = i + 1) begin
         ref_id[i] <= 0;
       end
     end
