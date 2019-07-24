@@ -3,6 +3,7 @@
 `include "bus.v"
 `include "branch.v"
 `include "opgen.v"
+`include "regfile.v"
 
 module IDROB(
   input                   clk,
@@ -11,7 +12,7 @@ module IDROB(
   input                   stall_current_stage,
   input                   stall_next_stage,
   input                   reg_write_en_in,
-  input   [`REG_ADDR_BUS] reg_write_addr_in,
+  input   [`RF_ADDR_BUS]  reg_write_addr_in,
   input                   is_branch_taken_in,
   input   [`GHR_BUS]      pht_index_in,
   input   [`ADDR_BUS]     inst_branch_target_in,
@@ -20,9 +21,6 @@ module IDROB(
   input                   mem_sign_ext_flag_in,
   input   [3:0]           mem_sel_in,
   input   [`DATA_BUS]     mem_offset_in,
-  input                   cp0_read_flag_in,
-  input                   cp0_write_flag_in,
-  input   [`CP0_ADDR_BUS] cp0_addr_in,
   input   [`EXC_TYPE_BUS] exception_type_in,
   input                   is_next_delayslot_in,
   input                   is_delayslot_in,
@@ -33,7 +31,7 @@ module IDROB(
   input   [`DATA_BUS]     operand_data_2_in,
   input   [`ADDR_BUS]     pc_in,
   output                  reg_write_en_out,
-  output  [`REG_ADDR_BUS] reg_write_addr_out,
+  output  [`RF_ADDR_BUS]  reg_write_addr_out,
   output                  is_branch_taken_out,
   output  [`GHR_BUS]      pht_index_out,
   output  [`ADDR_BUS]     inst_branch_target_out,
@@ -42,9 +40,6 @@ module IDROB(
   output                  mem_sign_ext_flag_out,
   output  [3:0]           mem_sel_out,
   output  [`DATA_BUS]     mem_offset_out,
-  output                  cp0_read_flag_out,
-  output                  cp0_write_flag_out,
-  output  [`CP0_ADDR_BUS] cp0_addr_out,
   output  [`EXC_TYPE_BUS] exception_type_out,
   output                  is_current_delayslot_out,
   output                  is_delayslot_out,
@@ -62,7 +57,7 @@ module IDROB(
     reg_write_en_in, reg_write_en_out
   );
 
-  PipelineDeliver #(`REG_ADDR_BUS_WIDTH) ff_reg_write_addr(
+  PipelineDeliver #(`RF_ADDR_BUS_WIDTH) ff_reg_write_addr(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     reg_write_addr_in, reg_write_addr_out
@@ -114,24 +109,6 @@ module IDROB(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     mem_offset_in, mem_offset_out
-  );
-
-  PipelineDeliver #(1) ff_cp0_read_flag(
-    clk, rst, flush,
-    stall_current_stage, stall_next_stage,
-    cp0_read_flag_in, cp0_read_flag_out
-  );
-
-  PipelineDeliver #(1) ff_cp0_write_flag(
-    clk, rst, flush,
-    stall_current_stage, stall_next_stage,
-    cp0_write_flag_in, cp0_write_flag_out
-  );
-
-  PipelineDeliver #(`CP0_ADDR_BUS_WIDTH) ff_cp0_addr(
-    clk, rst, flush,
-    stall_current_stage, stall_next_stage,
-    cp0_addr_in, cp0_addr_out
   );
 
   PipelineDeliver #(`EXC_TYPE_BUS_WIDTH) ff_exception_type(
