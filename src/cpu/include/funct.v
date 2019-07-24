@@ -58,16 +58,4 @@
 `define FUNCT_CLZ       6'b100000
 `define FUNCT_CLO       6'b100001
 
-// NOTE: improper usage
-// '111???' is meaningless in current MIPS ISA
-// but we can't make sure it won't be used in a future version
-`define FUNCT2_MADD     6'b111000
-`define FUNCT2_MADDU    6'b111001
-`define FUNCT2_MUL      6'b111010
-`define FUNCT2_MSUB     6'b111011
-`define FUNCT2_MSUBU    6'b111100
-`define FUNCT2_CLZ      6'b111101
-`define FUNCT2_CLO      6'b111110
-`define FUNCT_NOP       6'b111111
-
 `endif  // OOPA_CPU_INCLUDE_FUNCT_V_
