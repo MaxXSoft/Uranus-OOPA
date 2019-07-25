@@ -46,7 +46,6 @@ module RegFile_tb(
     .write_ref_id     (write_ref_id),
 
     .write_lo_en      (0),
-    .write_lo_ref_id  (0),
 
     .commit_restore   (commit_restore),
     .commit_add       (commit_add),
