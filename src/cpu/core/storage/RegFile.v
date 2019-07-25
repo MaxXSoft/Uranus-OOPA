@@ -18,7 +18,6 @@ module RegFile(
   input   [`ROB_ADDR_BUS] write_ref_id,
   // write channel #2
   input                   write_lo_en,
-  input   [`ROB_ADDR_BUS] write_lo_ref_id,
   // commit channel #1
   input                   commit_restore,
   input                   commit_add,
@@ -233,7 +232,7 @@ module RegFile(
         ref_id[write_addr] <= write_ref_id;
       end
       if (write_lo_en) begin
-        ref_id[`RF_REG_LO] <= write_lo_ref_id;
+        ref_id[`RF_REG_LO] <= write_ref_id;
       end
     end
   end
@@ -253,20 +252,13 @@ module RegFile(
         read_is_ref_1 <= 0;
         read_data_1 <= reg_val[read_addr_1];
       end
-      else if (write_en && read_addr_1 == write_addr) begin
+      else if ((write_en && read_addr_1 == write_addr) ||
+          (write_lo_en && read_addr_1 == `RF_REG_LO)) begin
         // data forwarding
         read_is_ref_1 <= 1;
         read_data_1 <= {
           {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
           write_ref_id
-        };
-      end
-      else if (write_lo_en && read_addr_1 == `RF_REG_LO) begin
-        // data forwarding
-        read_is_ref_1 <= 1;
-        read_data_1 <= {
-          {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
-          write_lo_ref_id
         };
       end
       else if (commit_en && read_addr_1 == commit_addr) begin
@@ -323,20 +315,13 @@ module RegFile(
         read_is_ref_2 <= 0;
         read_data_2 <= reg_val[read_addr_2];
       end
-      else if (write_en && read_addr_2 == write_addr) begin
+      else if ((write_en && read_addr_2 == write_addr) ||
+          (write_lo_en && read_addr_2 == `RF_REG_LO)) begin
         // data forwarding
         read_is_ref_2 <= 1;
         read_data_2 <= {
           {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
           write_ref_id
-        };
-      end
-      else if (write_lo_en && read_addr_2 == `RF_REG_LO) begin
-        // data forwarding
-        read_is_ref_2 <= 1;
-        read_data_2 <= {
-          {(`DATA_BUS_WIDTH - `ROB_ADDR_WIDTH){1'b0}},
-          write_lo_ref_id
         };
       end
       else if (commit_en && read_addr_2 == commit_addr) begin
