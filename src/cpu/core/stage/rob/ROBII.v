@@ -21,9 +21,6 @@ module ROBII(
   input                   mem_sign_ext_flag_in,
   input   [3:0]           mem_sel_in,
   input   [`DATA_BUS]     mem_offset_in,
-  input                   cp0_read_flag_in,
-  input                   cp0_write_flag_in,
-  input   [`CP0_ADDR_BUS] cp0_addr_in,
   input   [`EXC_TYPE_BUS] exception_type_in,
   input   [`OPGEN_BUS]    opgen_in,
   input                   operand_is_ref_1_in,
@@ -41,9 +38,6 @@ module ROBII(
   output                  mem_sign_ext_flag_out,
   output  [3:0]           mem_sel_out,
   output  [`DATA_BUS]     mem_offset_out,
-  output                  cp0_read_flag_out,
-  output                  cp0_write_flag_out,
-  output  [`CP0_ADDR_BUS] cp0_addr_out,
   output  [`EXC_TYPE_BUS] exception_type_out,
   output  [`OPGEN_BUS]    opgen_out,
   output                  operand_is_ref_1_out,
@@ -111,24 +105,6 @@ module ROBII(
     clk, rst, flush,
     stall_current_stage, stall_next_stage,
     mem_offset_in, mem_offset_out
-  );
-
-  PipelineDeliver #(1) ff_cp0_read_flag(
-    clk, rst, flush,
-    stall_current_stage, stall_next_stage,
-    cp0_read_flag_in, cp0_read_flag_out
-  );
-
-  PipelineDeliver #(1) ff_cp0_write_flag(
-    clk, rst, flush,
-    stall_current_stage, stall_next_stage,
-    cp0_write_flag_in, cp0_write_flag_out
-  );
-
-  PipelineDeliver #(`CP0_ADDR_BUS_WIDTH) ff_cp0_addr(
-    clk, rst, flush,
-    stall_current_stage, stall_next_stage,
-    cp0_addr_in, cp0_addr_out
   );
 
   PipelineDeliver #(`EXC_TYPE_BUS_WIDTH) ff_exception_type(

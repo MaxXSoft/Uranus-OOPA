@@ -5,12 +5,15 @@
 `include "rob.v"
 `include "opgen.v"
 `include "exception.v"
+`include "regfile.v"
 
 module ROB(
   input                   rst,
   // from ID stage
+  input                   reg_write_add_in,
   input                   reg_write_en_in,
-  input   [`REG_ADDR_BUS] reg_write_addr_in,
+  input   [`RF_ADDR_BUS]  reg_write_addr_in,
+  input                   reg_write_lo_en_in,
   input                   is_branch_taken_in,
   input   [`GHR_BUS]      pht_index_in,
   input   [`ADDR_BUS]     inst_branch_target_in,
@@ -19,9 +22,6 @@ module ROB(
   input                   mem_sign_ext_flag_in,
   input   [3:0]           mem_sel_in,
   input   [`DATA_BUS]     mem_offset_in,
-  input                   cp0_read_flag_in,
-  input                   cp0_write_flag_in,
-  input   [`CP0_ADDR_BUS] cp0_addr_in,
   input   [`EXC_TYPE_BUS] exception_type_in,
   input                   is_delayslot_in,
   input   [`OPGEN_BUS]    opgen_in,
@@ -35,8 +35,10 @@ module ROB(
   input                   rob_can_write,
   input   [`ROB_ADDR_BUS] rob_write_addr_in,
   // reorder buffer write data
+  output                  rob_write_reg_write_add,
   output                  rob_write_reg_write_en,
-  output  [`REG_ADDR_BUS] rob_write_reg_write_addr,
+  output  [`RF_ADDR_BUS]  rob_write_reg_write_addr,
+  output                  rob_write_reg_write_lo_en,
   output  [`EXC_TYPE_BUS] rob_write_exception_type,
   output                  rob_write_is_delayslot,
   output  [`ADDR_BUS]     rob_write_pc,
@@ -44,25 +46,34 @@ module ROB(
   output                  rob_commit_en,
   input                   rob_can_commit,
   // reorder buffer commit data
+  input                   rob_commit_reg_write_add,
   input                   rob_commit_reg_write_en,
-  input   [`REG_ADDR_BUS] rob_commit_reg_write_addr,
+  input   [`RF_ADDR_BUS]  rob_commit_reg_write_addr,
   input   [`DATA_BUS]     rob_commit_reg_write_data,
+  input                   rob_commit_reg_write_lo_en,
+  input   [`DATA_BUS]     rob_commit_reg_write_lo_data,
   input   [`EXC_TYPE_BUS] rob_commit_exception_type,
   input                   rob_commit_is_delayslot,
   input   [`ADDR_BUS]     rob_commit_pc,
   // regfile write channel
   output                  reg_write_en,
-  output  [`REG_ADDR_BUS] reg_write_addr,
+  output  [`RF_ADDR_BUS]  reg_write_addr,
   output  [`ROB_ADDR_BUS] reg_write_ref_id,
+  output                  reg_write_lo_en,
   // regfile commit channel
+  output                  reg_commit_add,
   output                  reg_commit_en,
-  output  [`REG_ADDR_BUS] reg_commit_addr,
+  output  [`RF_ADDR_BUS]  reg_commit_addr,
   output  [`DATA_BUS]     reg_commit_data,
+  output                  reg_commit_lo_en,
+  output  [`DATA_BUS]     reg_commit_lo_data,
   // to pipeline controller
   output                  stall_request,
   output  [`EXC_TYPE_BUS] exception_type_out,
   output                  is_delayslot_out,
   output  [`ADDR_BUS]     current_pc_out,
+  // to store queue
+  // TODO
   // to II stage
   output                  can_issue,
   output  [`ROB_ADDR_BUS] ii_rob_addr,
@@ -74,9 +85,6 @@ module ROB(
   output                  ii_mem_sign_ext_flag,
   output  [3:0]           ii_mem_sel,
   output  [`DATA_BUS]     ii_mem_offset,
-  output                  ii_cp0_read_flag,
-  output                  ii_cp0_write_flag,
-  output  [`CP0_ADDR_BUS] ii_cp0_addr,
   output  [`EXC_TYPE_BUS] ii_exception_type,
   output  [`OPGEN_BUS]    ii_opgen,
   output                  ii_operand_is_ref_1,
@@ -90,8 +98,10 @@ module ROB(
   assign rob_write_en = rob_can_write;
 
   // generate write data to reorder buffer
+  assign rob_write_reg_write_add = reg_write_add_in;
   assign rob_write_reg_write_en = reg_write_en_in;
   assign rob_write_reg_write_addr = reg_write_addr_in;
+  assign rob_write_reg_write_lo_en = reg_write_lo_en_in;
   assign rob_write_exception_type = exception_type_in;
   assign rob_write_is_delayslot = is_delayslot_in;
   assign rob_write_pc = pc_in;
@@ -100,6 +110,7 @@ module ROB(
   assign reg_write_en = reg_write_en_in;
   assign reg_write_addr = reg_write_addr_in;
   assign reg_write_ref_id = rob_write_addr_in;
+  assign reg_write_lo_en = reg_write_lo_en_in;
 
   // generate stall request
   assign stall_request = !rob_can_write;
@@ -127,9 +138,12 @@ module ROB(
   assign rob_commit_en = rob_can_commit && !is_exception;
 
   // generate regfile commit signals
+  assign reg_commit_add = rob_commit_en && rob_commit_reg_write_add;
   assign reg_commit_en = rob_commit_en && rob_commit_reg_write_en;
   assign reg_commit_addr = rob_commit_reg_write_addr;
   assign reg_commit_data = rob_commit_reg_write_data;
+  assign reg_commit_lo_en = rob_commit_en && rob_commit_reg_write_lo_en;
+  assign reg_commit_lo_data = rob_commit_reg_write_lo_data;
 
   // generate signals to II stage
   assign can_issue = rob_write_en;
@@ -142,9 +156,6 @@ module ROB(
   assign ii_mem_sign_ext_flag = mem_sign_ext_flag_in;
   assign ii_mem_sel = mem_sel_in;
   assign ii_mem_offset = mem_offset_in;
-  assign ii_cp0_read_flag = cp0_read_flag_in;
-  assign ii_cp0_write_flag = cp0_write_flag_in;
-  assign ii_cp0_addr = cp0_addr_in;
   assign ii_exception_type = exception_type_in;
   assign ii_opgen = opgen_in;
   assign ii_operand_is_ref_1 = operand_is_ref_1_in;
