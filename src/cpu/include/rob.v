@@ -31,11 +31,11 @@
 
 // RS line state
 `define RS_STATE_BUS          2:0
-`define RS_STATE_NONE         2'd0    // empty RS line
-`define RS_STATE_WRITE        2'd1    // written but not ready
-`define RS_STATE_READY        2'd2    // ready but not issued
-`define RS_STATE_WAIT         2'd3    // issued but not committed
-`define RS_STATE_COMMIT       2'd4    // committed
+`define RS_STATE_NONE         3'd0    // empty RS line
+`define RS_STATE_WRITE        3'd1    // written but not ready
+`define RS_STATE_READY        3'd2    // ready but not issued
+`define RS_STATE_WAIT         3'd3    // issued but not committed
+`define RS_STATE_COMMIT       3'd4    // committed
 
 // ---------   end config   ---------
 

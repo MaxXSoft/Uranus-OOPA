@@ -122,7 +122,7 @@ module RSInt(
   generate
     for (i = 0; i < `RS_INT_SIZE; i = i + 1) begin
       assign commit_indicator[i] = rsl_state[i] == `RS_STATE_COMMIT;
-      assign line_invalidate_en[i] = commit_en && rsl_commit_en[i];
+      assign line_invalidate_en[i] = rob_commit_en && rsl_commit_en[i];
     end
   endgenerate
 
