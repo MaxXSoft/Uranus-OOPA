@@ -25,9 +25,9 @@ module RSLineInt(
   input                   bus_lo_en,
   input   [`DATA_BUS]     bus_lo_ref_id_in,
   input   [`DATA_BUS]     bus_lo_data_in,
-  // read channel
-  output                  write_ready,
-  output                  commit_ready,
+  // issue channel
+  input                   issue_en,
+  output  [`RS_STATE_BUS] rs_state,
   output  [`ROB_ADDR_BUS] rob_addr_out,
   output  [`OPGEN_BUS]    opgen_out,
   output  [`DATA_BUS]     operand_data_1_out,
@@ -35,8 +35,10 @@ module RSLineInt(
   output  [`DATA_BUS]     commit_data_out
 );
 
+  // state indicator
+  reg[`RS_STATE_BUS]  rs_state;
+
   // storage
-  reg                 commit_ready;
   reg[`ROB_ADDR_BUS]  rob_addr;
   reg[`OPGEN_BUS]     opgen;
   reg                 operand_is_ref_1;
@@ -46,7 +48,6 @@ module RSLineInt(
   reg[`DATA_BUS]      commit_data;
 
   // read channel
-  assign write_ready = !operand_is_ref_1 && !operand_is_ref_2;
   assign rob_addr_out = rob_addr;
   assign opgen_out = opgen;
   assign operand_data_1_out = operand_data_1;
@@ -56,7 +57,7 @@ module RSLineInt(
   // write & CDB & commit channel
   always @(posedge clk) begin
     if (!rst) begin
-      commit_ready <= 0;
+      rs_state <= `RS_STATE_NONE;
       rob_addr <= 0;
       opgen <= 0;
       operand_is_ref_1 <= 0;
@@ -86,9 +87,13 @@ module RSLineInt(
           operand_data_2 <= bus_lo_data_in;
         end
       end
+      // update state
+      if (!operand_is_ref_1 && !operand_is_ref_2) begin
+        rs_state <= `RS_STATE_ISSUE;
+      end
     end
     else if (write_en) begin
-      commit_ready <= 0;
+      rs_state <= `RS_STATE_NONE;
       rob_addr <= rob_addr_in;
       opgen <= opgen_in;
       operand_is_ref_1 <= operand_is_ref_1_in;
@@ -98,8 +103,11 @@ module RSLineInt(
       commit_data <= 0;
     end
     else if (commit_en) begin
-      commit_ready <= 1;
+      rs_state <= `RS_STATE_COMMIT;
       commit_data <= commit_data_in;
+    end
+    else if (issue_en) begin
+      rs_state <= `RS_STATE_WAIT;
     end
   end
 
