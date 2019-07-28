@@ -28,13 +28,13 @@ module IntUnit(
 
   always @(*) begin
     case (opgen_in)
-      `OPGEN_NOP: wb_en_out <= 0;
+      `OPGEN_NOP: wb_en <= 0;
       `OPGEN_ADD, `OPGEN_SUB, `OPGEN_SLT, `OPGEN_SLTU, `OPGEN_AND,
       `OPGEN_NOR, `OPGEN_OR, `OPGEN_XOR, `OPGEN_SLL, `OPGEN_SRA, `OPGEN_SRL,
-      `OPGEN_CLZ, `OPGEN_CLO: wb_en_out <= 1;
-      `OPGEN_MOVZ: wb_en_out <= !(|operand_2_in);
-      `OPGEN_MOVN: wb_en_out <= |operand_2_in;
-      default: wb_en_out <= 0;
+      `OPGEN_CLZ, `OPGEN_CLO: wb_en <= 1;
+      `OPGEN_MOVZ: wb_en <= !(|operand_2_in);
+      `OPGEN_MOVN: wb_en <= |operand_2_in;
+      default: wb_en <= 0;
     endcase
   end
 
@@ -44,11 +44,11 @@ module IntUnit(
 
 
   // generate internal signals
-  wire[`DATA_BUS] operand_2_mux, result_sum
+  wire[`DATA_BUS] operand_2_mux, result_sum;
   wire overflow_sum, opr1_lt_opr2;
 
-  assign operand_2_mux = (opgen_in == `OPGEN_SUB ||
-      opgen_in == `OPGEN_SUBU || opgen_in == `OPGEN_SLT) ?
+  assign operand_2_mux =
+      (opgen_in == `OPGEN_SUB || opgen_in == `OPGEN_SLT) ?
       -operand_2_in : operand_2_in;
   assign result_sum = operand_1_in + operand_2_mux;
   assign overflow_sum =
@@ -68,7 +68,7 @@ module IntUnit(
   // generate exception signals
   assign exc_type_out = {
     exc_type_in[7:3],
-    (exc_type_in[`EXC_TYPE_POS_OV] ? overflow_sum : 0),
+    (exc_type_in[`EXC_TYPE_POS_OV] ? overflow_sum : 1'b0),
     exc_type_in[1:0]
   };
 
@@ -90,7 +90,7 @@ module IntUnit(
     case (opgen_in)
       `OPGEN_NOP: result_out <= 0;
       `OPGEN_ADD, `OPGEN_SUB: result_out <= result_sum;
-      `OPGEN_SLT, `OPGEN_SLTU: result_out <= opr1_lt_opr2;
+      `OPGEN_SLT, `OPGEN_SLTU: result_out <= {31'b0, opr1_lt_opr2};
       `OPGEN_AND: result_out <= operand_1_in & operand_2_in;
       `OPGEN_NOR: result_out <= ~(operand_1_in | operand_2_in);
       `OPGEN_OR: result_out <= operand_1_in | operand_2_in;
