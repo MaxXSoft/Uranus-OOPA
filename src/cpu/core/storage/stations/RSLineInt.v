@@ -10,6 +10,7 @@ module RSLineInt(
   // write channel
   input                   write_en,
   input   [`ROB_ADDR_BUS] rob_addr_in,
+  input   [`EXC_TYPE_BUS] exc_type_in,
   input   [`OPGEN_BUS]    opgen_in,
   input                   operand_is_ref_1_in,
   input                   operand_is_ref_2_in,
@@ -18,6 +19,7 @@ module RSLineInt(
   // commit channel
   input                   invalidate_en,
   input                   commit_en,
+  input   [`EXC_TYPE_BUS] commit_exc_type_in,
   input   [`DATA_BUS]     commit_data_in,
   // CDB channel
   input                   bus_en,
@@ -30,6 +32,7 @@ module RSLineInt(
   input                   issue_en,
   output  [`RS_STATE_BUS] rs_state,
   output  [`ROB_ADDR_BUS] rob_addr_out,
+  output  [`EXC_TYPE_BUS] exc_type_out,
   output  [`OPGEN_BUS]    opgen_out,
   output  [`DATA_BUS]     operand_data_1_out,
   output  [`DATA_BUS]     operand_data_2_out,
@@ -41,6 +44,7 @@ module RSLineInt(
 
   // storage
   reg[`ROB_ADDR_BUS]  rob_addr;
+  reg[`EXC_TYPE_BUS]  exc_type;
   reg[`OPGEN_BUS]     opgen;
   reg                 operand_is_ref_1;
   reg                 operand_is_ref_2;
@@ -48,8 +52,9 @@ module RSLineInt(
   reg[`DATA_BUS]      operand_data_2;
   reg[`DATA_BUS]      commit_data;
 
-  // read channel
+  // issue channel
   assign rob_addr_out = rob_addr;
+  assign exc_type_out = exc_type;
   assign opgen_out = opgen;
   assign operand_data_1_out = operand_data_1;
   assign operand_data_2_out = operand_data_2;
@@ -78,6 +83,7 @@ module RSLineInt(
   always @(posedge clk) begin
     if (!rst) begin
       rob_addr <= 0;
+      exc_type <= 0;
       opgen <= 0;
       operand_is_ref_1 <= 0;
       operand_is_ref_2 <= 0;
@@ -87,6 +93,7 @@ module RSLineInt(
     end
     else if (write_en) begin
       rob_addr <= rob_addr_in;
+      exc_type <= exc_type_in;
       opgen <= opgen_in;
       operand_is_ref_1 <= operand_is_ref_1_in;
       operand_is_ref_2 <= operand_is_ref_2_in;
@@ -117,6 +124,7 @@ module RSLineInt(
       end
     end
     else if (commit_en) begin
+      exc_type <= commit_exc_type_in;
       commit_data <= commit_data_in;
     end
   end

@@ -13,6 +13,7 @@ module RSInt(
   input                       write_en,
   output                      can_write,
   input   [`ROB_ADDR_BUS]     rob_addr_in,
+  input   [`EXC_TYPE_BUS]     exc_type_in,
   input   [`OPGEN_BUS]        opgen_in,
   input                       operand_is_ref_1_in,
   input                       operand_is_ref_2_in,
@@ -21,6 +22,7 @@ module RSInt(
   // commit channel (commit to RS)
   input                       rs_commit_en,
   input   [`RS_INT_ADDR_BUS]  rs_commit_addr,
+  input   [`EXC_TYPE_BUS]     rs_commit_exc_type,
   input   [`DATA_BUS]         rs_commit_data,
   // CDB channel
   input                       bus_en,
@@ -32,11 +34,13 @@ module RSInt(
   // commit channel (commit to ROB)
   output                      can_commit,
   input                       rob_commit_en,
-  output  [`DATA_BUS]         rob_commit_data,
   output  [`ROB_ADDR_BUS]     rob_commit_addr,
+  output  [`EXC_TYPE_BUS]     rob_commit_exc_type,
+  output  [`DATA_BUS]         rob_commit_data,
   // issue channel (issue to INT)
   output                      can_issue,
   output  [`RS_INT_ADDR_BUS]  rs_addr_out,
+  output  [`EXC_TYPE_BUS]     exc_type_out,
   output  [`OPGEN_BUS]        opgen_out,
   output  [`DATA_BUS]         operand_data_1_out,
   output  [`DATA_BUS]         operand_data_2_out
@@ -49,6 +53,7 @@ module RSInt(
   wire                line_issue_en[`RS_INT_SIZE - 1:0];
   wire[`RS_STATE_BUS] rsl_state[`RS_INT_SIZE - 1:0];
   wire[`ROB_ADDR_BUS] rsl_rob_addr[`RS_INT_SIZE - 1:0];
+  wire[`EXC_TYPE_BUS] rsl_exc_type[`RS_INT_SIZE - 1:0];
   wire[`OPGEN_BUS]    rsl_opgen[`RS_INT_SIZE - 1:0];
   wire[`DATA_BUS]     rsl_operand_data_1[`RS_INT_SIZE - 1:0];
   wire[`DATA_BUS]     rsl_operand_data_2[`RS_INT_SIZE - 1:0];
@@ -64,6 +69,7 @@ module RSInt(
 
         .write_en             (line_write_en[i]),
         .rob_addr_in          (rob_addr_in),
+        .exc_type_in          (exc_type_in),
         .opgen_in             (opgen_in),
         .operand_is_ref_1_in  (operand_is_ref_1_in),
         .operand_is_ref_2_in  (operand_is_ref_2_in),
@@ -72,6 +78,7 @@ module RSInt(
 
         .invalidate_en        (line_invalidate_en[i]),
         .commit_en            (line_commit_en[i]),
+        .commit_exc_type_in   (rs_commit_exc_type),
         .commit_data_in       (rs_commit_data),
 
         .bus_en               (bus_en),
@@ -84,6 +91,7 @@ module RSInt(
         .issue_en             (line_issue_en[i]),
         .rs_state             (rsl_state[i]),
         .rob_addr_out         (rsl_rob_addr[i]),
+        .exc_type_out         (rsl_exc_type[i]),
         .opgen_out            (rsl_opgen[i]),
         .operand_data_1_out   (rsl_operand_data_1[i]),
         .operand_data_2_out   (rsl_operand_data_2[i]),
@@ -116,8 +124,9 @@ module RSInt(
   assign rsl_commit_en = commit_indicator & (-commit_indicator);
   assign can_commit = |commit_indicator;
 
-  `GEN_OUT_16(rob_commit_data, rsl_commit_en, rsl_commit_data);
   `GEN_OUT_16(rob_commit_addr, rsl_commit_en, rsl_rob_addr);
+  `GEN_OUT_16(rob_commit_exc_type, rsl_commit_en, rsl_exc_type);
+  `GEN_OUT_16(rob_commit_data, rsl_commit_en, rsl_commit_data);
 
   generate
     for (i = 0; i < `RS_INT_SIZE; i = i + 1) begin
@@ -133,6 +142,7 @@ module RSInt(
   assign can_issue = |issue_indicator;
 
   `GEN_OUT_16(rs_addr_out, rsl_issue_en, rsl_line_addr);
+  `GEN_OUT_16(exc_type_out, rsl_issue_en, rsl_exc_type);
   `GEN_OUT_16(opgen_out, rsl_issue_en, rsl_opgen);
   `GEN_OUT_16(operand_data_1_out, rsl_issue_en, rsl_operand_data_1);
   `GEN_OUT_16(operand_data_2_out, rsl_issue_en, rsl_operand_data_2);
