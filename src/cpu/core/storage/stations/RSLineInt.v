@@ -16,6 +16,7 @@ module RSLineInt(
   input   [`DATA_BUS]     operand_data_1_in,
   input   [`DATA_BUS]     operand_data_2_in,
   // commit channel
+  input                   invalidate_en,
   input                   commit_en,
   input   [`DATA_BUS]     commit_data_in,
   // CDB channel
@@ -54,16 +55,43 @@ module RSLineInt(
   assign operand_data_2_out = operand_data_2;
   assign commit_data_out = commit_data;
 
-  // write & CDB & commit channel
+  // update state
+  always @(posedge clk) begin
+    if (!rst || !invalidate_en) begin
+      rs_state <= `RS_STATE_NONE;
+    end
+    else if (write_en) begin
+      rs_state <= `RS_STATE_WRITE;
+    end
+    else if (!operand_is_ref_1 && !operand_is_ref_2) begin
+      rs_state <= `RS_STATE_READY;
+    end
+    else if (issue_en) begin
+      rs_state <= `RS_STATE_WAIT;
+    end
+    else if (commit_en) begin
+      rs_state <= `RS_STATE_COMMIT;
+    end
+  end
+
+  // update data
   always @(posedge clk) begin
     if (!rst) begin
-      rs_state <= `RS_STATE_NONE;
       rob_addr <= 0;
       opgen <= 0;
       operand_is_ref_1 <= 0;
       operand_is_ref_2 <= 0;
       operand_data_1 <= 0;
       operand_data_2 <= 0;
+      commit_data <= 0;
+    end
+    else if (write_en) begin
+      rob_addr <= rob_addr_in;
+      opgen <= opgen_in;
+      operand_is_ref_1 <= operand_is_ref_1_in;
+      operand_is_ref_2 <= operand_is_ref_2_in;
+      operand_data_1 <= operand_data_1_in;
+      operand_data_2 <= operand_data_2_in;
       commit_data <= 0;
     end
     else if (bus_en) begin
@@ -87,27 +115,9 @@ module RSLineInt(
           operand_data_2 <= bus_lo_data_in;
         end
       end
-      // update state
-      if (!operand_is_ref_1 && !operand_is_ref_2) begin
-        rs_state <= `RS_STATE_ISSUE;
-      end
-    end
-    else if (write_en) begin
-      rs_state <= `RS_STATE_NONE;
-      rob_addr <= rob_addr_in;
-      opgen <= opgen_in;
-      operand_is_ref_1 <= operand_is_ref_1_in;
-      operand_is_ref_2 <= operand_is_ref_2_in;
-      operand_data_1 <= operand_data_1_in;
-      operand_data_2 <= operand_data_2_in;
-      commit_data <= 0;
     end
     else if (commit_en) begin
-      rs_state <= `RS_STATE_COMMIT;
       commit_data <= commit_data_in;
-    end
-    else if (issue_en) begin
-      rs_state <= `RS_STATE_WAIT;
     end
   end
 
