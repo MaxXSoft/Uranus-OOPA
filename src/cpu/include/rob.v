@@ -29,12 +29,13 @@
 `define RS_BRU_SIZE           `MAKE_SIZE(`RS_BRU_ADDR_WIDTH)
 `define RS_BRU_ADDR_BUS       `MAKE_BUS(`RS_BRU_ADDR_WIDTH)
 
-// FSM
-`define RS_STATE_BUS          1:0
-`define RS_STATE_NONE         2'b00
-`define RS_STATE_ISSUE        2'b01
-`define RS_STATE_WAIT         2'b10
-`define RS_STATE_COMMIT       2'b11
+// RS line state
+`define RS_STATE_BUS          2:0
+`define RS_STATE_NONE         2'd0    // empty RS line
+`define RS_STATE_WRITE        2'd1    // written but not ready
+`define RS_STATE_READY        2'd2    // ready but not issued
+`define RS_STATE_WAIT         2'd3    // issued but not committed
+`define RS_STATE_COMMIT       2'd4    // committed
 
 // ---------   end config   ---------
 
