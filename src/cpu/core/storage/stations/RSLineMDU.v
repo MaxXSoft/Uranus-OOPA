@@ -26,9 +26,6 @@ module RSLineMDU(
   input                   bus_en,
   input   [`DATA_BUS]     bus_ref_id_in,
   input   [`DATA_BUS]     bus_data_in,
-  input                   bus_lo_en,
-  input   [`DATA_BUS]     bus_lo_ref_id_in,
-  input   [`DATA_BUS]     bus_lo_data_in,
   // issue channel
   input                   issue_en,
   output  [`RS_STATE_BUS] rs_state,
