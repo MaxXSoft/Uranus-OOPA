@@ -16,17 +16,18 @@ verilinter += warn_flags
 make_cmd = 'make -C build'
 
 def detect_dir(src):
-  ans = ''
+  ans = set()
+  ans.add('-I' + src)
   for r, d, f in os.walk(src):
     for i in f:
       if i.endswith('.v'):
         if not d:
-          ans += ' -I' + r
+          ans.add('-I' + r)
         else:
           for name in d:
-            ans += ' -I' + os.path.join(r, name)
+            ans.add('-I' + os.path.join(r, name))
         break
-  return ans
+  return ' ' + ' '.join(ans)
 
 def get_mod_name(file):
   with open(file) as f:
