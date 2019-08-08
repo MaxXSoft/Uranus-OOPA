@@ -16,4 +16,4 @@ When using Xilinx Vivado, you should add include path (`src/cpu/include`) manual
 
 ## Copyright & License
 
-Copyright (C) 2018-2019 USTB NSCSCC Team. License GPLv3.
+Copyright (C) 2018-2019 MaxXing & USTB NSCSCC Team. License GPLv3.
