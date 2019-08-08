@@ -124,6 +124,7 @@ module ROB(
     if (!rst || !rob_can_commit) begin
       exception_type_out <= `EXC_TYPE_NULL;
     end
+    // TODO: handle interrupts
     else if (|rob_commit_pc[1:0]) begin
       exception_type_out <= `EXC_TYPE_IF;
     end

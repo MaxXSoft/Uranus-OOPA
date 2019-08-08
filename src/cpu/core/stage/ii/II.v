@@ -38,6 +38,8 @@ module II(
   output                  operand_is_ref_2_out,
   output  [`DATA_BUS]     operand_data_1_out,
   output  [`DATA_BUS]     operand_data_2_out,
+  // CDB channel
+  //
   // RS Int commit channel
   //
   // RS MDU commit channel
@@ -47,6 +49,9 @@ module II(
   // RS BRU commit channel
   //
 );
+
+  // generate stall request
+  // TODO
 
   // output signals to reservation station
   reg int_wen, mdu_wen, lsu_wen, bru_wen;
