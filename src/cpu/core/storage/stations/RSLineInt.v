@@ -62,14 +62,16 @@ module RSLineInt(
 
   // update state
   always @(posedge clk) begin
-    if (!rst || !invalidate_en) begin
+    if (!rst || invalidate_en) begin
       rs_state <= `RS_STATE_NONE;
     end
     else if (write_en) begin
-      rs_state <= `RS_STATE_WRITE;
-    end
-    else if (!operand_is_ref_1 && !operand_is_ref_2) begin
-      rs_state <= `RS_STATE_READY;
+      if (!operand_is_ref_1_in && !operand_is_ref_2_in) begin
+        rs_state <= `RS_STATE_READY;
+      end
+      else begin
+        rs_state <= `RS_STATE_WRITE;
+      end
     end
     else if (issue_en) begin
       rs_state <= `RS_STATE_WAIT;
@@ -77,11 +79,14 @@ module RSLineInt(
     else if (commit_en) begin
       rs_state <= `RS_STATE_COMMIT;
     end
+    else if (!operand_is_ref_1 && !operand_is_ref_2) begin
+      rs_state <= `RS_STATE_READY;
+    end
   end
 
   // update data
   always @(posedge clk) begin
-    if (!rst) begin
+    if (!rst || invalidate_en) begin
       rob_addr <= 0;
       exc_type <= 0;
       opgen <= 0;
